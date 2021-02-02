@@ -164,7 +164,7 @@ class ArUcoTracker(SKSBaseTracker):
         :return:
             port_numbers: If tools have been defined port numbers are the tool
                 descriptions. Otherwise port numbers are the aruco tag ID
-                prefixed with aruco_
+                prefixed with aruco
 
             port_numbers : list of port handles, one per tool
 

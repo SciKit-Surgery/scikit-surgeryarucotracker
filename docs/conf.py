@@ -102,7 +102,7 @@ master_doc = 'index'
 
 # This allows modules to be indexed under the submodule name rather than all appearing under scikit-surgeryarucotracker
 modindex_common_prefix = [
-    'scikit-surgeryarucotracker.'
+    'sksurgeryarucotracker.'
 ]
 
 # General information about the project.
