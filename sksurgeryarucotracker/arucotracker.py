@@ -198,6 +198,9 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
+        #I want to iterate through all marker corners and assign them
+        #to rigid bodies,
+        #or to class them as undefined.
         if marker_corners:
             for marker in nditer(marker_ids):
                 port_handles.append(marker.item())
@@ -239,7 +242,7 @@ class ArUcoTracker(SKSBaseTracker):
 
     def get_tool_descriptions(self):
         """ Returns tool descriptions """
-        return self._capture
+        return "No tools defined"
 
     def start_tracking(self):
         """
