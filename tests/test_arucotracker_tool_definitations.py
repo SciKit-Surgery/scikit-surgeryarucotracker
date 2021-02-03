@@ -2,7 +2,6 @@
 
 """scikit-surgeryarucotracker tests"""
 
-import pytest
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
 
@@ -32,8 +31,30 @@ def test_with_tool_descriptions():
     tracker.stop_tracking()
     tracker.close()
 
+    #try again with the right dictionary for the bard marker tags
+    config = {'video source' : 'data/multipattern.avi',
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'}
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    #with nothing set we'll only detect tag ID 0, the others
+    #are from a different dictionary.
+    (port_handles, timestamps, framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert len(port_handles) == len(timestamps)
+    assert len(port_handles) == len(framenumbers)
+    assert len(port_handles) == len(tracking)
+    assert len(port_handles) == len(quality)
+    assert len(port_handles) == 17
+    assert 1 in port_handles
+
+    #we should load the tag info and check that all tags are found
+    print (port_handles)
+    tracker.stop_tracking()
+    tracker.close()
+
     #try again with the right dictionary
     #then try again after setting some rigid bodies
-    #look at image quality, we could have so that quality = detected tags / 
+    #look at image quality, we could have so that quality = detected tags /
     #tags on body
-
