@@ -7,7 +7,7 @@ def test_rigid_body_init():
     Test class initialises
     """
 
-    rigid_body = rgbd.ArUcoRigidBody()
+    rigid_body = rgbd.ArUcoRigidBody(rigid_body_name = 'test')
 
     rigid_body.load_3d_points('data/reference.txt')
 

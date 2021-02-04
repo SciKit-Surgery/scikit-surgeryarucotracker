@@ -16,10 +16,11 @@ from sksurgerycore.transforms.matrix import (construct_rotm_from_euler,
                                              )
 
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
+from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody
 
 def _get_poses_without_calibration(marker_corners):
     """
-    Returns a tracking data for and uncalibrated camera.
+    Returns tracking data for a camera with no calibration data.
     x and y are the screen pixel coordinates.
     z is based on the size of the tag in pixels, there is no
     rotation
@@ -83,6 +84,8 @@ class ArUcoTracker(SKSBaseTracker):
         self._frame_number = 0
 
         self._debug = configuration.get("debug", False)
+
+        self._rigid_bodies =[] 
 
         video_source = configuration.get("video source", 0)
 
@@ -159,14 +162,13 @@ class ArUcoTracker(SKSBaseTracker):
     def get_frame(self, frame=None):
         """Gets a frame of tracking data from the Tracker device.
 
-        :params frame: an image to process, if None, we use the OpenCV
+        :param frame: an image to process, if None, we use the OpenCV
             video source.
         :return:
-            port_numbers: If tools have been defined port numbers are the tool
-                descriptions. Otherwise port numbers are the aruco tag ID
-                prefixed with aruco
 
-            port_numbers : list of port handles, one per tool
+            port_numbers: If tools have been defined port numbers are the tool
+            descriptions. Otherwise port numbers are the aruco tag ID
+            prefixed with aruco
 
             time_stamps : list of timestamps (cpu clock), one per tool
 
@@ -198,30 +200,52 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
-        #I want to iterate through all marker corners and assign them
-        #to rigid bodies,
-        #or to class them as undefined.
-        if marker_corners:
-            for marker in nditer(marker_ids):
-                port_handles.append(marker.item())
-                time_stamps.append(timestamp)
-                frame_numbers.append(self._frame_number)
-                tracking_quality.append(1.0)
-
-            if self._use_camera_projection:
-                tracking = self._get_poses_with_calibration(marker_corners)
-            else:
-                tracking = _get_poses_without_calibration(marker_corners)
-
-            if self._debug:
-                aruco.drawDetectedMarkers(frame, marker_corners)
-
-        self._frame_number += 1
         if self._debug:
             imshow('frame', frame)
 
+        if not marker_corners:
+            self._frame_number += 1
+            return (port_handles, time_stamps, frame_numbers, tracking,
+                    tracking_quality)
+
+        if self._debug:
+            aruco.drawDetectedMarkers(frame, marker_corners)
+
+        assigned_marker_ids = []
+        for rigid_body in self._rigid_bodies:
+            assigned_marker_ids += rigid_body.set_2d_points(
+                            marker_corners, marker_ids)
+
+        #find any unassigned tags and create a rigid body for them
+        temporary_rigid_bodies = []
+        for index, marker_id in enumerate(marker_ids):
+            if marker_id[0] not in assigned_marker_ids:
+                temp_rigid_body = ArUcoRigidBody(marker_id[0])
+                temp_rigid_body.add_single_tag(self._marker_size, marker_id[0])
+                temp_rigid_body.set_2d_points([marker_corners[index]], 
+                                marker_id)
+                temporary_rigid_bodies.append(temp_rigid_body)
+
+        for rigid_body in self._rigid_bodies + temporary_rigid_bodies:
+            _tracking, _quality = rigid_body.get_pose(
+                            self._camera_projection_matrix,
+                            self._camera_distortion)
+
+        for marker in nditer(marker_ids):
+            port_handles.append(marker.item())
+            time_stamps.append(timestamp)
+            frame_numbers.append(self._frame_number)
+            tracking_quality.append(1.0)
+
+        if self._use_camera_projection:
+            tracking = self._get_poses_with_calibration(marker_corners)
+        else:
+            tracking = _get_poses_without_calibration(marker_corners)
+
+        self._frame_number += 1
         return (port_handles, time_stamps, frame_numbers, tracking,
                 tracking_quality)
+
 
     def _get_poses_with_calibration(self, marker_corners):
         rvecs, tvecs, _ = \
