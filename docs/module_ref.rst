@@ -14,3 +14,12 @@ Register detected image points (2D) to model points (3D)
    :members:
    :undoc-members:
    :show-inheritance:
+
+
+Manage rigid bodies consisting of multiple tags
+--------------------------------------------------------
+
+.. automodule:: sksurgeryarucotracker.algorithms.rigid_bodies
+   :members:
+   :undoc-members:
+   :show-inheritance:
