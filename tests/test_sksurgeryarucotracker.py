@@ -3,6 +3,7 @@
 """scikit-surgeryarucotracker tests"""
 
 import pytest
+import numpy as np
 from cv2 import VideoCapture
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
@@ -110,6 +111,13 @@ def test_on_static_muti_tag():
     for tagid in range(1,13):
         assert tagid in port_handles
 
+    regression_array6 = np.array([[1., 0.,0. ,262.5],
+                                  [0., 1.,0. ,241.5],
+                                  [0., 0., 1., -151.32085],
+                                  [0., 0., 0., 1.]])
+
+    assert np.allclose(tracking[port_handles.index(6)], regression_array6)
+
     tracker.stop_tracking()
     tracker.close()
 
@@ -149,9 +157,18 @@ def test_on_video_with_calib():
 
     tracker = ArUcoTracker(config1)
     tracker.start_tracking()
-    for _ in range(10):
-        (_port_handles, _timestamps, _framenumbers,
-         _tracking, _quality) = tracker.get_frame()
+    for frame in range(10):
+        (port_handles, _timestamps, _framenumbers,
+         tracking, _quality) = tracker.get_frame()
+        if frame == 1:
+
+            regression_array = np.array([
+            [9.9823801e-01, -4.7362393e-02, -3.5744403e-02, 1.7609988e+01],
+            [-4.719324e-02, -9.9887029e-01, 5.56165716e-03, 2.5085676e+01],
+            [-3.596743e-02, -3.8649639e-03, -9.9934549e-01, 2.1036779e+02],
+            [ 0., 0.,  0.,  1.]])
+            assert np.allclose(tracking[port_handles.index(0)],
+                               regression_array)
 
     tracker.stop_tracking()
     tracker.close()

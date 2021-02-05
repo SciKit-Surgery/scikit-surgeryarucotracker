@@ -85,7 +85,7 @@ class ArUcoTracker(SKSBaseTracker):
 
         self._debug = configuration.get("debug", False)
 
-        self._rigid_bodies =[] 
+        self._rigid_bodies =[]
 
         video_source = configuration.get("video source", 0)
 
@@ -222,7 +222,7 @@ class ArUcoTracker(SKSBaseTracker):
             if marker_id[0] not in assigned_marker_ids:
                 temp_rigid_body = ArUcoRigidBody(marker_id[0])
                 temp_rigid_body.add_single_tag(self._marker_size, marker_id[0])
-                temp_rigid_body.set_2d_points([marker_corners[index]], 
+                temp_rigid_body.set_2d_points([marker_corners[index]],
                                 marker_id)
                 temporary_rigid_bodies.append(temp_rigid_body)
 

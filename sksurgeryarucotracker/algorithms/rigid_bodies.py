@@ -1,6 +1,6 @@
 """ Classes and functions for maintaining ArUco rigid bodies """
 
-from numpy import loadtxt, ptp, copy
+import numpy
 
 class ArUcoRigidBody():
     """
@@ -11,7 +11,7 @@ class ArUcoRigidBody():
         """
         Initialises the RigidBody  class.
         """
-        self._tags_3d = []
+        self._tags_3d = numpy.empty((0,16), dtype='float64')
         self._tags_2d = []
         self._tag_size = []
         self._name = rigid_body_name
@@ -41,7 +41,7 @@ class ArUcoRigidBody():
         :param filename: Path of file containing tag data
 
         """
-        self._tags_3d = loadtxt(filename)
+        self._tags_3d = numpy.loadtxt(filename)
 
     def add_single_tag(self, tag_size, marker_id):
         """
@@ -52,13 +52,14 @@ class ArUcoRigidBody():
         :param: marker id
         """
         self._tag_size = tag_size
-        self._tags_3d.append([marker_id, 
+        default_tag = numpy.array([[marker_id,
                         tag_size/2.0, tag_size/2.0, 0.,
                         0., 0., 0.,
                         tag_size, 0., 0.,
                         tag_size, tag_size, 0.,
-                        0., tag_size, 0.])
-        print (self._tags_3d)
+                        0., tag_size, 0.]], dtype=numpy.float64)
+        self._tags_3d = numpy.append(self._tags_3d,
+                        default_tag, axis=0)
 
 
     def scale_3d_tags(self, measured_pattern_width):
@@ -68,10 +69,10 @@ class ArUcoRigidBody():
 
         :param measured_pattern_width: Width of the tag in mm
         """
-        model_pattern_width = min(ptp(self._tags_3d[:, 2::3]),
-                                  ptp(self._tags_3d[:, 1::3]))
+        model_pattern_width = min(numpy.ptp(self._tags_3d[:, 2::3]),
+                                  numpy.ptp(self._tags_3d[:, 1::3]))
         scale_factor = measured_pattern_width/model_pattern_width
-        tag_ids = copy(self._tags_3d[:, 0])
+        tag_ids = numpy.copy(self._tags_3d[:, 0])
         self._tags_3d *= scale_factor
         self._tags_3d[:, 0] = tag_ids
 
@@ -86,7 +87,7 @@ class ArUcoRigidBody():
         """
         if camera_projection_matrix is None:
             return self._get_poses_without_calibration()
-        
+
         return self._get_poses_with_calibration(camera_projection_matrix,
                         camera_distortion)
 
