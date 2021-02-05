@@ -2,6 +2,60 @@
 
 import numpy
 
+class ThreeDTags():
+    """
+    Stores two linked arrays, on of tag IDs and the other 
+    3D points
+    """
+
+    def __init__(self):
+        self.points = numpy.empty((0,15), dtype=numpy.float64)
+        self.ids = []
+
+    def load_from_file(self, filename):
+        tags_3d = numpy.loadtxt(filename)
+        self.points = tags_3d[:,1:16]
+        self.ids = tags_3d[:,0]
+
+    def add_single_tag(self, tag_size, marker_id):
+        """
+        We can use this to track single ArUco tags rather than
+        patterns as long as we know the tag size in mm
+
+        :param: tag size in mm
+        :param: marker id
+        """
+        default_tag = numpy.array([[
+                        tag_size/2.0, tag_size/2.0, 0.,
+                        0., 0., 0.,
+                        tag_size, 0., 0.,
+                        tag_size, tag_size, 0.,
+                        0., tag_size, 0.]], dtype=numpy.float64)
+        self.points = numpy.append(self.points, default_tag, axis=0)
+        self.ids.append(marker_id)
+
+    def scale_tags(self, measured_pattern_width):
+        model_pattern_width = min(numpy.ptp(self.points[:, 1::2]),
+                                  numpy.ptp(self.points[:, 0::4]))
+        scale_factor = measured_pattern_width/model_pattern_width
+        self.points *= scale_factor
+
+
+class TwoDTags():
+    """
+    Stores two linked arrays, on of tag IDs and the other 
+    2D points
+    """
+
+    def __init__(self):
+        self.points = numpy.empty((0,8), dtype=numpy.float64)
+        self.ids = []
+
+    def append_tag(self, tag_id, points):
+        self.points = numpy.append(self.points, [points.ravel()], axis=0)
+        self.ids.append(tag_id)
+
+
 class ArUcoRigidBody():
     """
     Class to handle the loading and registering of ArUco Rigid Bodies
@@ -11,8 +65,8 @@ class ArUcoRigidBody():
         """
         Initialises the RigidBody  class.
         """
-        self._tags_3d = numpy.empty((0,16), dtype='float64')
-        self._tags_2d = []
+        self._tags_3d = ThreeDTags()
+        self._tags_2d = TwoDTags()
         self._tag_size = []
         self._name = rigid_body_name
 
@@ -28,8 +82,8 @@ class ArUcoRigidBody():
         """
         tags_assigned = []
         for index, tag_id in enumerate(tag_ids):
-            if tag_id in self._tags_3d[:, 0]:
-                self._tags_2d.append([tag_id, two_d_points[index]])
+            if tag_id in self._tags_3d.ids:
+                self._tags_2d.append_tag(tag_id, two_d_points[index])
                 tags_assigned.append(tag_id)
 
         return tags_assigned
@@ -41,7 +95,7 @@ class ArUcoRigidBody():
         :param filename: Path of file containing tag data
 
         """
-        self._tags_3d = numpy.loadtxt(filename)
+        self._tags_3d.load_from_file(filename)
 
     def add_single_tag(self, tag_size, marker_id):
         """
@@ -51,15 +105,8 @@ class ArUcoRigidBody():
         :param: tag size in mm
         :param: marker id
         """
+        self._tags_3d.add_single_tag(tag_size, marker_id)
         self._tag_size = tag_size
-        default_tag = numpy.array([[marker_id,
-                        tag_size/2.0, tag_size/2.0, 0.,
-                        0., 0., 0.,
-                        tag_size, 0., 0.,
-                        tag_size, tag_size, 0.,
-                        0., tag_size, 0.]], dtype=numpy.float64)
-        self._tags_3d = numpy.append(self._tags_3d,
-                        default_tag, axis=0)
 
 
     def scale_3d_tags(self, measured_pattern_width):
@@ -69,13 +116,8 @@ class ArUcoRigidBody():
 
         :param measured_pattern_width: Width of the tag in mm
         """
-        model_pattern_width = min(numpy.ptp(self._tags_3d[:, 2::3]),
-                                  numpy.ptp(self._tags_3d[:, 1::3]))
-        scale_factor = measured_pattern_width/model_pattern_width
-        tag_ids = numpy.copy(self._tags_3d[:, 0])
-        self._tags_3d *= scale_factor
-        self._tags_3d[:, 0] = tag_ids
-
+        self._tags_3d.scale_tags(measured_pattern_width)
+       
     def get_pose(self, camera_projection_matrix, camera_distortion):
         """
         Estimate the pose of the rigid body, with or without
@@ -85,18 +127,37 @@ class ArUcoRigidBody():
             None we estimate pose based on pattern size
         :param: 1x5 camera distortion vector
         """
+        points3d, points2d = self._match_point_lists()
         if camera_projection_matrix is None:
             return self._get_poses_without_calibration()
 
         return self._get_poses_with_calibration(camera_projection_matrix,
                         camera_distortion)
 
+    def _match_point_lists(self):
+        """Turns 2d and 3d points into matched point list"""
+        points3d = []
+        points2d = []
+        count = 0
+        
+        print (self._tags_2d)
+        for tag in self._tags_3d.ids:
+            try: 
+                index2d = self._tags_2d.ids.index(tag)
+                count += 1 
+                #points3d.extend with 3 d point
+                points2d.extend(self._tags_2d.points[index2d])
+            except ValueError:
+                pass
+        
+        return points3d, points2d
+
 
     def _get_poses_without_calibration(self):
-        print(self)
+            #print(self)
         return None, None
 
     def _get_poses_with_calibration(self, camera_projection_matrix,
                     camera_distortion):
-        print(self, camera_projection_matrix, camera_distortion)
+            #print(self, camera_projection_matrix, camera_distortion)
         return None, None
