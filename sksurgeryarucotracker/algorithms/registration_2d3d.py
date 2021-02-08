@@ -106,3 +106,26 @@ class Registration2D3D():
                                          self._projection_matrix,
                                          self._distortion)
         return rvec, tvec
+
+def estimate_poses_no_calibration(marker_corners):
+    """
+    Returns tracking data for a camera with no calibration data.
+    x and y are the screen pixel coordinates.
+    z is based on the size of the tag in pixels, there is no
+    rotation. No account is taken of the size of the
+    model marker pattern, so it will be bit flakey.
+    """
+    tracking = []
+    quality = []
+    for marker in marker_corners:
+
+        means = np.mean(marker.reshape((4,2)), axis=0)
+        maxs = np.max(marker.reshape((4,2)), axis=0)
+        mins = np.min(marker.reshape((4,2)), axis=0)
+        size = np.linalg.norm(maxs - mins)
+        tracking.append(np.array([[1.0, 0.0, 0.0, means[0]],
+                               [0.0, 1.0, 0.0, means[1]],
+                               [0.0, 0.0, 1.0, -size],
+                               [0.0, 0.0, 0.0, 1.0]], dtype=np.float32))
+        quality = 1.0
+    return tracking, quality

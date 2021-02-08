@@ -3,10 +3,7 @@
 """A class for straightforward tracking with an ARuCo
 """
 from time import time
-from numpy import nditer, array, mean, float32, loadtxt
-from numpy import min as npmin
-from numpy import max as npmax
-from numpy.linalg import norm
+from numpy import array, float32, loadtxt
 import cv2.aruco as aruco # pylint: disable=import-error
 from cv2 import VideoCapture, imshow
 import cv2
@@ -17,25 +14,6 @@ from sksurgerycore.transforms.matrix import (construct_rotm_from_euler,
 
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody
-
-def _get_poses_without_calibration(marker_corners):
-    """
-    Returns tracking data for a camera with no calibration data.
-    x and y are the screen pixel coordinates.
-    z is based on the size of the tag in pixels, there is no
-    rotation
-    """
-    tracking = []
-    for marker in marker_corners:
-        means = mean(marker[0], axis=0)
-        maxs = npmax(marker[0], axis=0)
-        mins = npmin(marker[0], axis=0)
-        size = norm(maxs - mins)
-        tracking.append(array([[1.0, 0.0, 0.0, means[0]],
-                               [0.0, 1.0, 0.0, means[1]],
-                               [0.0, 0.0, 1.0, -size],
-                               [0.0, 0.0, 0.0, 1.0]], dtype=float32))
-    return tracking
 
 
 def _load_calibration(textfile):
@@ -195,8 +173,8 @@ class ArUcoTracker(SKSBaseTracker):
         port_handles = []
         time_stamps = []
         frame_numbers = []
-        tracking_quality = []
-        tracking = None
+        tracking = []
+        quality = []
 
         timestamp = time()
 
@@ -206,7 +184,7 @@ class ArUcoTracker(SKSBaseTracker):
         if not marker_corners:
             self._frame_number += 1
             return (port_handles, time_stamps, frame_numbers, tracking,
-                    tracking_quality)
+                    quality)
 
         if self._debug:
             aruco.drawDetectedMarkers(frame, marker_corners)
@@ -227,24 +205,18 @@ class ArUcoTracker(SKSBaseTracker):
                 temporary_rigid_bodies.append(temp_rigid_body)
 
         for rigid_body in self._rigid_bodies + temporary_rigid_bodies:
-            _tracking, _quality = rigid_body.get_pose(
+            rb_tracking, rbquality = rigid_body.get_pose(
                             self._camera_projection_matrix,
                             self._camera_distortion)
-
-        for marker in nditer(marker_ids):
-            port_handles.append(marker.item())
+            port_handles.append(rigid_body.name)
             time_stamps.append(timestamp)
             frame_numbers.append(self._frame_number)
-            tracking_quality.append(1.0)
-
-        if self._use_camera_projection:
-            tracking = self._get_poses_with_calibration(marker_corners)
-        else:
-            tracking = _get_poses_without_calibration(marker_corners)
+            tracking.append(rb_tracking)
+            quality.append(rbquality)
 
         self._frame_number += 1
         return (port_handles, time_stamps, frame_numbers, tracking,
-                tracking_quality)
+                quality)
 
 
     def _get_poses_with_calibration(self, marker_corners):

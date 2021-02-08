@@ -1,10 +1,12 @@
 """ Classes and functions for maintaining ArUco rigid bodies """
 
 import numpy
+from sksurgeryarucotracker.algorithms.registration_2d3d import \
+                estimate_poses_no_calibration
 
 class ThreeDTags():
     """
-    Stores two linked arrays, on of tag IDs and the other 
+    Stores two linked arrays, on of tag IDs and the other
     3D points
     """
 
@@ -13,6 +15,12 @@ class ThreeDTags():
         self.ids = []
 
     def load_from_file(self, filename):
+        """
+        Loads the 3D point geometry from a file
+
+        :param filename: Path of file containing tag data
+
+        """
         tags_3d = numpy.loadtxt(filename)
         self.points = tags_3d[:,1:16]
         self.ids = tags_3d[:,0]
@@ -35,6 +43,13 @@ class ThreeDTags():
         self.ids.append(marker_id)
 
     def scale_tags(self, measured_pattern_width):
+        """
+        We can scale the tag, which is very useful if you've got the tag
+        on your mobile phone.
+
+        :param measured_pattern_width: Width of the tag in mm
+        """
+
         model_pattern_width = min(numpy.ptp(self.points[:, 1::2]),
                                   numpy.ptp(self.points[:, 0::4]))
         scale_factor = measured_pattern_width/model_pattern_width
@@ -43,7 +58,7 @@ class ThreeDTags():
 
 class TwoDTags():
     """
-    Stores two linked arrays, on of tag IDs and the other 
+    Stores two linked arrays, on of tag IDs and the other
     2D points
     """
 
@@ -52,6 +67,11 @@ class TwoDTags():
         self.ids = []
 
     def append_tag(self, tag_id, points):
+        """ Adds a tag to the two point list
+        :param tag_id: The id of the tag
+        :param points: 4 points defining the tag corners
+        """
+
         self.points = numpy.append(self.points, [points.ravel()], axis=0)
         self.ids.append(tag_id)
 
@@ -68,7 +88,7 @@ class ArUcoRigidBody():
         self._tags_3d = ThreeDTags()
         self._tags_2d = TwoDTags()
         self._tag_size = []
-        self._name = rigid_body_name
+        self.name = rigid_body_name
 
     def set_2d_points(self, two_d_points, tag_ids):
         """
@@ -117,7 +137,7 @@ class ArUcoRigidBody():
         :param measured_pattern_width: Width of the tag in mm
         """
         self._tags_3d.scale_tags(measured_pattern_width)
-       
+
     def get_pose(self, camera_projection_matrix, camera_distortion):
         """
         Estimate the pose of the rigid body, with or without
@@ -129,35 +149,28 @@ class ArUcoRigidBody():
         """
         points3d, points2d = self._match_point_lists()
         if camera_projection_matrix is None:
-            return self._get_poses_without_calibration()
+            return estimate_poses_no_calibration(points2d)
 
-        return self._get_poses_with_calibration(camera_projection_matrix,
-                        camera_distortion)
+        return self._get_poses_with_calibration(
+                        points2d, points3d,
+                        camera_projection_matrix, camera_distortion)
 
     def _match_point_lists(self):
         """Turns 2d and 3d points into matched point list"""
         points3d = []
         points2d = []
-        count = 0
-        
-        print (self._tags_2d)
-        for tag in self._tags_3d.ids:
-            try: 
-                index2d = self._tags_2d.ids.index(tag)
-                count += 1 
-                #points3d.extend with 3 d point
-                points2d.extend(self._tags_2d.points[index2d])
+
+        for index3d, tag_id in enumerate(self._tags_3d.ids):
+            try:
+                index2d = self._tags_2d.ids.index(tag_id)
+                points3d.append(self._tags_3d.points[index3d])
+                points2d.append(self._tags_2d.points[index2d])
             except ValueError:
                 pass
-        
+
         return points3d, points2d
 
 
-    def _get_poses_without_calibration(self):
-            #print(self)
-        return None, None
-
-    def _get_poses_with_calibration(self, camera_projection_matrix,
-                    camera_distortion):
-            #print(self, camera_projection_matrix, camera_distortion)
-        return None, None
+    def _get_poses_with_calibration(self, pointd2d, points3d,
+                    camera_projection_matrix, camera_distortion):
+        raise NotImplementedError
