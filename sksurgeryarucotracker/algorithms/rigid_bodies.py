@@ -2,7 +2,7 @@
 
 import numpy
 from sksurgeryarucotracker.algorithms.registration_2d3d import \
-                estimate_poses_no_calibration
+                estimate_poses_no_calibration, estimate_poses_with_calibration
 
 class ThreeDTags():
     """
@@ -63,7 +63,7 @@ class TwoDTags():
     """
 
     def __init__(self):
-        self.points = numpy.empty((0,8), dtype=numpy.float64)
+        self.points = []
         self.ids = []
 
     def append_tag(self, tag_id, points):
@@ -71,8 +71,7 @@ class TwoDTags():
         :param tag_id: The id of the tag
         :param points: 4 points defining the tag corners
         """
-
-        self.points = numpy.append(self.points, [points.ravel()], axis=0)
+        self.points.append(points)
         self.ids.append(tag_id)
 
 
@@ -89,6 +88,7 @@ class ArUcoRigidBody():
         self._tags_2d = TwoDTags()
         self._tag_size = []
         self.name = rigid_body_name
+        self._default_tags = None
 
     def set_2d_points(self, two_d_points, tag_ids):
         """
@@ -105,7 +105,7 @@ class ArUcoRigidBody():
             if tag_id in self._tags_3d.ids:
                 self._tags_2d.append_tag(tag_id, two_d_points[index])
                 tags_assigned.append(tag_id)
-
+        self._default_tags = two_d_points
         return tags_assigned
 
     def load_3d_points(self, filename):
@@ -123,7 +123,7 @@ class ArUcoRigidBody():
         patterns as long as we know the tag size in mm
 
         :param: tag size in mm
-        :param: marker id
+        :param: marker id/_
         """
         self._tags_3d.add_single_tag(tag_size, marker_id)
         self._tag_size = tag_size
@@ -151,9 +151,10 @@ class ArUcoRigidBody():
         if camera_projection_matrix is None:
             return estimate_poses_no_calibration(points2d)
 
-        return self._get_poses_with_calibration(
-                        points2d, points3d,
-                        camera_projection_matrix, camera_distortion)
+        return estimate_poses_with_calibration(
+                            points2d, points3d,
+                            camera_projection_matrix, camera_distortion)
+
 
     def _match_point_lists(self):
         """Turns 2d and 3d points into matched point list"""
@@ -169,8 +170,3 @@ class ArUcoRigidBody():
                 pass
 
         return points3d, points2d
-
-
-    def _get_poses_with_calibration(self, pointd2d, points3d,
-                    camera_projection_matrix, camera_distortion):
-        raise NotImplementedError

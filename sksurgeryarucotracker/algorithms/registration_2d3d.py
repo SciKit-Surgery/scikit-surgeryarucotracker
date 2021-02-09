@@ -2,9 +2,14 @@
 
 import numpy as np
 import cv2
+import cv2.aruco as aruco # pylint: disable=import-error
 
 from sksurgerycore.algorithms.tracking_smoothing import RollingMean, \
                 RollingMeanRotation, quaternion_to_matrix
+
+from sksurgerycore.transforms.matrix import (construct_rotm_from_euler,
+                                             construct_rigid_transformation,
+                                             )
 
 class Registration2D3D():
     """
@@ -107,6 +112,19 @@ class Registration2D3D():
                                          self._distortion)
         return rvec, tvec
 
+def _marker_size(marker_points):
+    """
+    Internal function to calculate the size of a marker
+    :param marker_points: 2d or 3d points that make up the marker,
+        1 row per point
+
+    :return: The size of the marker
+    """
+    maxs = np.max(marker_points, axis = 0)
+    mins = np.min(marker_points, axis = 0)
+    size = np.linalg.norm(maxs - mins)
+    return size
+
 def estimate_poses_no_calibration(marker_corners):
     """
     Returns tracking data for a camera with no calibration data.
@@ -119,13 +137,46 @@ def estimate_poses_no_calibration(marker_corners):
     quality = []
     for marker in marker_corners:
 
-        means = np.mean(marker.reshape((4,2)), axis=0)
-        maxs = np.max(marker.reshape((4,2)), axis=0)
-        mins = np.min(marker.reshape((4,2)), axis=0)
-        size = np.linalg.norm(maxs - mins)
+        means = np.mean(marker[0], axis=0)
+        size = _marker_size(marker[0])
         tracking.append(np.array([[1.0, 0.0, 0.0, means[0]],
                                [0.0, 1.0, 0.0, means[1]],
                                [0.0, 0.0, 1.0, -size],
                                [0.0, 0.0, 0.0, 1.0]], dtype=np.float32))
         quality = 1.0
     return tracking, quality
+
+def estimate_poses_with_calibration(marker_corners2d,
+                model_points, camera_projection_matrix, camera_distortion):
+    """
+    Estimate the pose of a single tag or a multi-tag rigid body
+    when the camera calibration is known.
+    :param marker_corners2d: a list of 2d marker corners, 1 row per tag,
+        8 columns per tag
+    :param model_points: Matched list of of corresponding model points,
+        1 row per tag, 15 columns per tag: corner points and centre point
+    :param camera_projection_matrix: a 3x3 camera projection matrix
+    :param camera_distortion: camera distortion vector
+
+    :return : a tracking matrix and a quality
+    """
+
+    if len(marker_corners2d) == 1:
+        marker_width = model_points[0][6] - model_points[0][3]
+        rvecs, tvecs, _ = \
+            aruco.estimatePoseSingleMarkers(marker_corners2d,
+                                            marker_width,
+                                            camera_projection_matrix,
+                                            camera_distortion)
+        tracking = []
+        t_index = 0
+        for rvec in rvecs:
+            rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
+                                                rvec[0][2], 'xyz',
+                                                is_in_radians=True)
+            tracking.append(construct_rigid_transformation(rot_mat,
+                                                           tvecs[t_index][0]))
+            t_index += 1
+        return tracking, 1.0
+
+    raise NotImplementedError

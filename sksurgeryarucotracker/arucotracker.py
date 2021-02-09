@@ -8,9 +8,6 @@ import cv2.aruco as aruco # pylint: disable=import-error
 from cv2 import VideoCapture, imshow
 import cv2
 
-from sksurgerycore.transforms.matrix import (construct_rotm_from_euler,
-                                             construct_rigid_transformation,
-                                             )
 
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody
@@ -217,24 +214,6 @@ class ArUcoTracker(SKSBaseTracker):
         self._frame_number += 1
         return (port_handles, time_stamps, frame_numbers, tracking,
                 quality)
-
-
-    def _get_poses_with_calibration(self, marker_corners):
-        rvecs, tvecs, _ = \
-            aruco.estimatePoseSingleMarkers(marker_corners,
-                                            self._marker_size,
-                                            self._camera_projection_matrix,
-                                            self._camera_distortion)
-        tracking = []
-        t_index = 0
-        for rvec in rvecs:
-            rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
-                                                rvec[0][2], 'xyz',
-                                                is_in_radians=True)
-            tracking.append(construct_rigid_transformation(rot_mat,
-                                                           tvecs[t_index][0]))
-            t_index += 1
-        return tracking
 
     def get_tool_descriptions(self):
         """ Returns tool descriptions """
