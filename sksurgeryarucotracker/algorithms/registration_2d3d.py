@@ -146,8 +146,8 @@ def estimate_poses_no_calibration(marker_corners):
         quality = 1.0
     return tracking, quality
 
-def estimate_poses_with_calibration(marker_corners2d,
-                model_points, camera_projection_matrix, camera_distortion):
+def estimate_poses_with_calibration(marker_corners2d, marker_ids,
+                board, camera_projection_matrix, camera_distortion):
     """
     Estimate the pose of a single tag or a multi-tag rigid body
     when the camera calibration is known.
@@ -162,21 +162,42 @@ def estimate_poses_with_calibration(marker_corners2d,
     """
 
     if len(marker_corners2d) == 1:
-        marker_width = model_points[0][6] - model_points[0][3]
+        marker_width = board.objPoints[0][1][0] - board.objPoints[0][0][0]
         rvecs, tvecs, _ = \
-            aruco.estimatePoseSingleMarkers(marker_corners2d,
-                                            marker_width,
+            aruco.estimatePoseSingleMarkers(marker_corners2d, marker_width,
                                             camera_projection_matrix,
                                             camera_distortion)
         tracking = []
         t_index = 0
         for rvec in rvecs:
-            rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
+            rot_mat = construct_rotm_from_euler(rvec[0][0],rvec[0][1],
                                                 rvec[0][2], 'xyz',
                                                 is_in_radians=True)
             tracking.append(construct_rigid_transformation(rot_mat,
-                                                           tvecs[t_index][0]))
+                                                       tvecs[t_index][0]))
             t_index += 1
         return tracking, 1.0
 
+    print(marker_ids)
     raise NotImplementedError
+    #
+    #rvec = np.empty((1,3), dtype = np.float32)
+    #tvec = np.empty((1,3), dtype = np.float32)
+    #rvecs, tvecs, _ = \
+    #    aruco.estimatePoseBoard(marker_corners2d, np.array([marker_ids]),
+    #                                board,
+    #                                camera_projection_matrix,
+    #                                camera_distortion,
+    #                                rvec,
+    #                                tvec)
+    #tracking = []
+    #t_index = 0
+    #print ("\nRVECS = ", rvecs)
+    #print ("\nRVEC = ", rvec)
+    #print ("\nTVEC = ", tvec)
+    #for rvec in rvecs:
+    #rot_mat = construct_rotm_from_euler(rvec[0],rvec[1],rvec[2], 'xyz',
+    #                                      is_in_radians=True)
+    #tracking.append(construct_rigid_transformation(rot_mat,
+    #                                               tvec))
+    #return tracking, 1.0
