@@ -30,8 +30,33 @@ def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
     return aruco.Board_create(markerpoints, dictionary, marker_ids)
 
 
+def configure_rigid_bodies(configuration):
+    """
+    reads configuration and creates a list of rigid bodies 
+    together with a list of dictionaries used.
+    """
+    ar_dictionary_name = getattr(aruco, 'DICT_4X4_50')
+    if "aruco dictionary" in configuration:
+        dictionary_name = configuration.get("aruco dictionary")
+        try:
+            ar_dictionary_name = getattr(aruco, dictionary_name)
+        except AttributeError:
+            raise ImportError(('Failed when trying to import {} from cv2.'
+                                'aruco. Check dictionary exists.')
+                                .format(dictionary_name)) from AttributeError
+    ar_dicts = []
+    ar_dict_names = []
+    ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
+    ar_dict_names.append(ar_dictionary_name)
+    
+    rigid_bodies = []
+
+    return ar_dicts, ar_dict_names, rigid_bodies
+
+
 def single_tag_board(tag_size, marker_id,
-                ar_dictionary = aruco.DICT_ARUCO_ORIGINAL):
+                dictionary = 
+                aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)):
     """
     Create a board consisting of a single ArUco tag
 
@@ -44,7 +69,6 @@ def single_tag_board(tag_size, marker_id,
         tag_size/2.0, -tag_size/2.0, 0.,
         tag_size/2.0, tag_size/2.0, 0.,
         -tag_size/2.0, tag_size/2.0, 0.]], dtype=numpy.float32)
-    dictionary = aruco.getPredefinedDictionary(ar_dictionary)
     marker_ids = numpy.array([marker_id])
     return aruco.Board_create(tag, dictionary, marker_ids)
 
@@ -127,7 +151,7 @@ class ArUcoRigidBody():
         self._ar_board = load_board_from_file(filename,
                         dictionary = aruco.DICT_ARUCO_ORIGINAL)
 
-    def add_single_tag(self, tag_size, marker_id):
+    def add_single_tag(self, tag_size, marker_id, dictionary):
         """
         We can use this to track single ArUco tags rather than
         patterns as long as we know the tag size in mm
@@ -135,7 +159,7 @@ class ArUcoRigidBody():
         :param: tag size in mm
         :param: marker id/_
         """
-        self._ar_board = single_tag_board(tag_size, marker_id)
+        self._ar_board = single_tag_board(tag_size, marker_id, dictionary)
 
     def scale_3d_tags(self, measured_pattern_width):
         """
@@ -163,7 +187,11 @@ class ArUcoRigidBody():
                         self._tags_2d.points, self._tags_2d.ids,
                             self._ar_board,
                             camera_projection_matrix, camera_distortion)
-
+    
+    def get_dictionary(self):
+        """returns the aruco dictionary in use"""
+        
+        return self._ar_board.dictionary
 
     def _match_point_lists(self):
         """Turns 2d and 3d points into matched point list"""

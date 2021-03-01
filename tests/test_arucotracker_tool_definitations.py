@@ -26,7 +26,7 @@ def test_with_tool_descriptions():
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 1
-    assert 0 in port_handles
+    assert "0:0" in port_handles
 
     tracker.stop_tracking()
     tracker.close()
@@ -47,14 +47,52 @@ def test_with_tool_descriptions():
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 17
-    assert 1 in port_handles
+    assert "16:1" in port_handles
 
     #we should load the tag info and check that all tags are found
-    print (port_handles)
     tracker.stop_tracking()
     tracker.close()
 
-    #try again with the right dictionary
+    config = {'video source' : 'data/multipattern.avi',
+              'rigid bodies' : [ 
+                      { 
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL' 
+                      },
+                      { 
+                        'name' : 'pointer',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL' 
+                      }
+                      ]
+              }
+    #this configuration should also pick up the single tag 0. We can set a 
+    #loop in get frames at
+
+    #for each dictionary in self._ar_dicts so we could have mutltiple dictionaries
+
+    #marker_corners, marker_ids, _ = \
+                    #            aruco.detectMarkers(frame, self._ar_dict)
+
+
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+    
+    (port_handles, timestamps, framenumbers,
+     tracking, quality) = tracker.get_frame()
+    print(port_handles)
+    assert len(port_handles) == len(timestamps)
+    assert len(port_handles) == len(framenumbers)
+    assert len(port_handles) == len(tracking)
+    assert len(port_handles) == len(quality)
+    assert len(port_handles) == 3 
+    assert 'reference' in port_handles
+    assert 'pointer' in port_handles
+    assert 0 in port_handles
+    assert '0:1' in port_handles
+
     #then try again after setting some rigid bodies
     #look at image quality, we could have so that quality = detected tags /
     #tags on body

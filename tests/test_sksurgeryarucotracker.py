@@ -24,7 +24,7 @@ def test_on_video_with_single_tag():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == 0
+        assert port_handles[0] == '0:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -54,7 +54,7 @@ def test_no_video_single_tag():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == 0
+        assert port_handles[0] == '0:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -82,7 +82,7 @@ def test_on_video_with_debug():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == 0
+        assert port_handles[0] == '0:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -109,7 +109,8 @@ def test_on_static_muti_tag():
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 12
     for tagid in range(1,13):
-        assert tagid in port_handles
+        tag_name = str('10:' + str(tagid))
+        assert tag_name in port_handles
 
     regression_array6 = np.array([[1., 0.,0. ,262.5],
                                   [0., 1.,0. ,241.5],

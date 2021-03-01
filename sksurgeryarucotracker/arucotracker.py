@@ -10,7 +10,8 @@ import cv2
 
 
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
-from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody
+from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody, \
+                configure_rigid_bodies
 
 
 def _load_calibration(textfile):
@@ -44,10 +45,13 @@ class ArUcoTracker(SKSBaseTracker):
 
             camera distortion: defaults to None
 
+            rigid bodies: a list of rigid bodies to track, each body should
+                have a name, a filename where the tag geometry is defined, 
+                and an aruco dictionary to use
+
         :raise Exception: ImportError, ValueError
         """
 
-        self._ar_dict = None
         self._camera_projection_matrix = configuration.get("camera projection",
                                                            None)
         self._camera_distortion = configuration.get(
@@ -60,8 +64,6 @@ class ArUcoTracker(SKSBaseTracker):
 
         self._debug = configuration.get("debug", False)
 
-        self._rigid_bodies =[]
-
         video_source = configuration.get("video source", 0)
 
         if video_source != 'none':
@@ -69,17 +71,8 @@ class ArUcoTracker(SKSBaseTracker):
         else:
             self._capture = None
 
-        ar_dictionary_name = getattr(aruco, 'DICT_4X4_50')
-        if "aruco dictionary" in configuration:
-            dictionary_name = configuration.get("aruco dictionary")
-            try:
-                ar_dictionary_name = getattr(aruco, dictionary_name)
-            except AttributeError:
-                raise ImportError(('Failed when trying to import {} from cv2.'
-                                   'aruco. Check dictionary exists.')
-                                  .format(dictionary_name)) from AttributeError
-
-        self._ar_dict = aruco.getPredefinedDictionary(ar_dictionary_name)
+        self._ar_dicts, self._ar_dict_names, self._rigid_bodies = \
+                        configure_rigid_bodies(configuration)
 
         self._marker_size = configuration.get("marker size", 50)
 
@@ -164,8 +157,6 @@ class ArUcoTracker(SKSBaseTracker):
         if frame is None:
             raise ValueError('Frame not set, and capture.read failed')
 
-        marker_corners, marker_ids, _ = \
-                aruco.detectMarkers(frame, self._ar_dict)
 
         port_handles = []
         time_stamps = []
@@ -178,33 +169,38 @@ class ArUcoTracker(SKSBaseTracker):
         if self._debug:
             imshow('frame', frame)
 
-        if not marker_corners:
-            self._frame_number += 1
-            return (port_handles, time_stamps, frame_numbers, tracking,
-                    quality)
-
-        if self._debug:
-            aruco.drawDetectedMarkers(frame, marker_corners)
-
-        assigned_marker_ids = []
-        for rigid_body in self._rigid_bodies:
-            assigned_marker_ids += rigid_body.set_2d_points(
-                            marker_corners, marker_ids)
-
-        #find any unassigned tags and create a rigid body for them
         temporary_rigid_bodies = []
-        for index, marker_id in enumerate(marker_ids):
-            if marker_id[0] not in assigned_marker_ids:
-                temp_rigid_body = ArUcoRigidBody(marker_id[0])
-                temp_rigid_body.add_single_tag(self._marker_size, marker_id[0])
-                temp_rigid_body.set_2d_points([marker_corners[index]],
-                                marker_id)
-                temporary_rigid_bodies.append(temp_rigid_body)
+        for dict_index, ar_dict in enumerate(self._ar_dicts):
+            marker_corners, marker_ids, _ = \
+                    aruco.detectMarkers(frame, ar_dict)
+            if not marker_corners:
+                break
+
+            if self._debug:
+                aruco.drawDetectedMarkers(frame, marker_corners)
+            
+            assigned_marker_ids = []
+            for rigid_body in self._rigid_bodies:
+                if rigid_body.get_dictionary == ar_dict:
+                    assigned_marker_ids += rigid_body.set_2d_points(
+                                    marker_corners, marker_ids)
+
+            #find any unassigned tags and create a rigid body for them
+            for index, marker_id in enumerate(marker_ids):
+                if marker_id[0] not in assigned_marker_ids:
+                    temp_rigid_body = ArUcoRigidBody(
+                                    str(self._ar_dict_names[dict_index]) + 
+                                    ":" + str(marker_id[0]))
+                    temp_rigid_body.add_single_tag(self._marker_size,
+                                    marker_id[0], ar_dict)
+                    temp_rigid_body.set_2d_points([marker_corners[index]],
+                                    marker_id)
+                    temporary_rigid_bodies.append(temp_rigid_body)
 
         for rigid_body in self._rigid_bodies + temporary_rigid_bodies:
             rb_tracking, rbquality = rigid_body.get_pose(
-                            self._camera_projection_matrix,
-                            self._camera_distortion)
+                             self._camera_projection_matrix,
+                             self._camera_distortion)
             port_handles.append(rigid_body.name)
             time_stamps.append(timestamp)
             frame_numbers.append(self._frame_number)
