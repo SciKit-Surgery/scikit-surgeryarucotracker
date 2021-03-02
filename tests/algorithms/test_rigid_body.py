@@ -9,6 +9,6 @@ def test_rigid_body_init():
 
     rigid_body = rgbd.ArUcoRigidBody(rigid_body_name = 'test')
 
-    rigid_body.load_3d_points('data/reference.txt')
+    rigid_body.load_3d_points('data/reference.txt', 'DICT_ARUCO_ORIGINAL')
 
     rigid_body.scale_3d_tags(measured_pattern_width = 10)

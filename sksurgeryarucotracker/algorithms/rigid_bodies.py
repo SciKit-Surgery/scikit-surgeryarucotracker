@@ -36,7 +36,7 @@ def configure_rigid_bodies(configuration):
     together with a list of dictionaries used.
     """
     ar_dictionary_name = getattr(aruco, 'DICT_4X4_50')
-    if "aruco dictionary" in configuration:
+    if 'aruco dictionary' in configuration:
         dictionary_name = configuration.get("aruco dictionary")
         try:
             ar_dictionary_name = getattr(aruco, dictionary_name)
@@ -50,6 +50,19 @@ def configure_rigid_bodies(configuration):
     ar_dict_names.append(ar_dictionary_name)
 
     rigid_bodies = []
+    rigid_body_configs = configuration.get('rigid bodies', [])
+
+    for rigid_body_config in rigid_body_configs:
+        rigid_body = ArUcoRigidBody(rigid_body_config.get('name','no name'))
+        filename = rigid_body_config.get('filename', None)
+        if filename is None:
+            raise ValueError('rigid body configuration must include filename')
+        dictionary_name = rigid_body_config.get('aruco dictionary',
+                                                'DICT_ARUCO_ORIGINAL')
+        rigid_body.load_3d_points(filename, dictionary_name)
+
+        rigid_bodies.append(rigid_body)
+        print (rigid_body_config)
 
     return ar_dicts, ar_dict_names, rigid_bodies
 
@@ -141,15 +154,16 @@ class ArUcoRigidBody():
         self._default_tags = two_d_points
         return tags_assigned
 
-    def load_3d_points(self, filename):
+    def load_3d_points(self, filename, dictionaryname):
         """
         Loads the 3D point geometry from a file
 
         :param filename: Path of file containing tag data
 
         """
-        self._ar_board = load_board_from_file(filename,
-                        dictionary = aruco.DICT_ARUCO_ORIGINAL)
+
+        ar_dictionary_name = getattr(aruco, dictionaryname)
+        self._ar_board = load_board_from_file(filename, ar_dictionary_name)
 
     def add_single_tag(self, tag_size, marker_id, dictionary):
         """
