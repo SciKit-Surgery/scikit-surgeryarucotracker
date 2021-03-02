@@ -46,7 +46,7 @@ class ArUcoTracker(SKSBaseTracker):
             camera distortion: defaults to None
 
             rigid bodies: a list of rigid bodies to track, each body should
-                have a name, a filename where the tag geometry is defined, 
+                have a name, a filename where the tag geometry is defined,
                 and an aruco dictionary to use
 
         :raise Exception: ImportError, ValueError
@@ -57,7 +57,6 @@ class ArUcoTracker(SKSBaseTracker):
         self._camera_distortion = configuration.get(
                         "camera distortion", array([0.0, 0.0, 0.0, 0.0, 0.0],
                                                    dtype=float32))
-        self._use_camera_projection = False
         self._state = None
 
         self._frame_number = 0
@@ -104,16 +103,15 @@ class ArUcoTracker(SKSBaseTracker):
         """Checks that the camera projection matrix and camera distortion
         matrices can be used to estimate pose"""
         if self._camera_projection_matrix is None:
-            self._use_camera_projection = False
             return
 
         if (self._camera_projection_matrix.shape == (3, 3) and
                 self._camera_projection_matrix.dtype == float32):
-            self._use_camera_projection = True
-        else:
-            raise ValueError(('Camera projection matrix needs to be 3x3 and'
-                              'float32'), self._camera_projection_matrix.shape,
-                             self._camera_projection_matrix.dtype)
+            return
+
+        raise ValueError(('Camera projection matrix needs to be 3x3 and'
+                          'float32'), self._camera_projection_matrix.shape,
+                          self._camera_projection_matrix.dtype)
 
     def close(self):
         """
@@ -178,7 +176,7 @@ class ArUcoTracker(SKSBaseTracker):
 
             if self._debug:
                 aruco.drawDetectedMarkers(frame, marker_corners)
-            
+
             assigned_marker_ids = []
             for rigid_body in self._rigid_bodies:
                 if rigid_body.get_dictionary == ar_dict:
@@ -189,7 +187,7 @@ class ArUcoTracker(SKSBaseTracker):
             for index, marker_id in enumerate(marker_ids):
                 if marker_id[0] not in assigned_marker_ids:
                     temp_rigid_body = ArUcoRigidBody(
-                                    str(self._ar_dict_names[dict_index]) + 
+                                    str(self._ar_dict_names[dict_index]) +
                                     ":" + str(marker_id[0]))
                     temp_rigid_body.add_single_tag(self._marker_size,
                                     marker_id[0], ar_dict)

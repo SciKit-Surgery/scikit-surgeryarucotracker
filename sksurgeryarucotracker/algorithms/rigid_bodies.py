@@ -32,7 +32,7 @@ def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
 
 def configure_rigid_bodies(configuration):
     """
-    reads configuration and creates a list of rigid bodies 
+    reads configuration and creates a list of rigid bodies
     together with a list of dictionaries used.
     """
     ar_dictionary_name = getattr(aruco, 'DICT_4X4_50')
@@ -48,14 +48,14 @@ def configure_rigid_bodies(configuration):
     ar_dict_names = []
     ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
     ar_dict_names.append(ar_dictionary_name)
-    
+
     rigid_bodies = []
 
     return ar_dicts, ar_dict_names, rigid_bodies
 
 
 def single_tag_board(tag_size, marker_id,
-                dictionary = 
+                dictionary =
                 aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)):
     """
     Create a board consisting of a single ArUco tag
@@ -187,10 +187,10 @@ class ArUcoRigidBody():
                         self._tags_2d.points, self._tags_2d.ids,
                             self._ar_board,
                             camera_projection_matrix, camera_distortion)
-    
+
     def get_dictionary(self):
         """returns the aruco dictionary in use"""
-        
+
         return self._ar_board.dictionary
 
     def _match_point_lists(self):
