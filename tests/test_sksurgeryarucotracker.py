@@ -24,7 +24,7 @@ def test_on_video_with_single_tag():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == '0:0'
+        assert port_handles[0] == 'DICT_4X4_50:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -54,7 +54,7 @@ def test_no_video_single_tag():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == '0:0'
+        assert port_handles[0] == 'DICT_4X4_50:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -82,7 +82,7 @@ def test_on_video_with_debug():
         assert len(port_handles) == len(tracking)
         assert len(port_handles) == len(quality)
         assert len(port_handles) == 1
-        assert port_handles[0] == '0:0'
+        assert port_handles[0] == 'DICT_4X4_50:0'
         assert framenumbers[0] == frame
         assert quality[0] == 1.0
 
@@ -109,7 +109,7 @@ def test_on_static_muti_tag():
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 12
     for tagid in range(1,13):
-        tag_name = str('10:' + str(tagid))
+        tag_name = str('DICT_6X6_250:' + str(tagid))
         assert tag_name in port_handles
 
     regression_array6 = np.array([[1., 0.,0. ,262.5],
@@ -117,7 +117,8 @@ def test_on_static_muti_tag():
                                   [0., 0., 1., -151.32085],
                                   [0., 0., 0., 1.]])
 
-    assert np.allclose(tracking[port_handles.index('10:6')], regression_array6)
+    assert np.allclose(tracking[port_handles.index('DICT_6X6_250:6')],
+                       regression_array6)
 
     tracker.stop_tracking()
     tracker.close()
@@ -168,7 +169,7 @@ def test_on_video_with_calib():
             [-4.719324e-02, -9.9887029e-01, 5.56165716e-03, 2.5085676e+01],
             [-3.596743e-02, -3.8649639e-03, -9.9934549e-01, 2.1036779e+02],
             [ 0., 0.,  0.,  1.]])
-            assert np.allclose(tracking[port_handles.index('0:0')],
+            assert np.allclose(tracking[port_handles.index('DICT_4X4_50:0')],
                                regression_array)
 
     tracker.stop_tracking()

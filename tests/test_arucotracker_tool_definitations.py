@@ -26,7 +26,7 @@ def test_with_tool_descriptions():
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 1
-    assert '0:0' in port_handles
+    assert 'DICT_4X4_50:0' in port_handles
 
     tracker.stop_tracking()
     tracker.close()
@@ -47,7 +47,7 @@ def test_with_tool_descriptions():
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
     assert len(port_handles) == 17
-    assert "16:1" in port_handles
+    assert 'DICT_ARUCO_ORIGINAL:1' in port_handles
 
     #we should load the tag info and check that all tags are found
     tracker.stop_tracking()
@@ -62,7 +62,7 @@ def test_with_tool_descriptions():
                       },
                       {
                         'name' : 'pointer',
-                        'filename' : 'data/reference.txt',
+                        'filename' : 'data/pointer.txt',
                         'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
                       }
                       ]
@@ -87,10 +87,11 @@ def test_with_tool_descriptions():
     assert len(port_handles) == len(framenumbers)
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
-    assert len(port_handles) == 3
+    assert len(port_handles) == 4 #there is an extraneous marker (1000)
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
-    assert '0:0' in port_handles
+    assert 'DICT_4X4_50:0' in port_handles
+    print(tracking)
 
     #then try again after setting some rigid bodies
     #look at image quality, we could have so that quality = detected tags /

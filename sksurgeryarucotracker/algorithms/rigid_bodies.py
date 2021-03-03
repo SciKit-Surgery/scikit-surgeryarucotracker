@@ -35,19 +35,17 @@ def configure_rigid_bodies(configuration):
     reads configuration and creates a list of rigid bodies
     together with a list of dictionaries used.
     """
-    ar_dictionary_name = getattr(aruco, 'DICT_4X4_50')
-    if 'aruco dictionary' in configuration:
-        dictionary_name = configuration.get("aruco dictionary")
-        try:
-            ar_dictionary_name = getattr(aruco, dictionary_name)
-        except AttributeError:
-            raise ImportError(('Failed when trying to import {} from cv2.'
-                                'aruco. Check dictionary exists.')
-                                .format(dictionary_name)) from AttributeError
+    dictionary_name = configuration.get("aruco dictionary", 'DICT_4X4_50')
+    try:
+        ar_dictionary_name = getattr(aruco, dictionary_name)
+    except AttributeError:
+        raise ImportError(('Failed when trying to import {} from cv2.'
+                           'aruco. Check dictionary exists.')
+                           .format(dictionary_name)) from AttributeError
     ar_dicts = []
     ar_dict_names = []
     ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
-    ar_dict_names.append(ar_dictionary_name)
+    ar_dict_names.append(dictionary_name)
 
     rigid_bodies = []
     rigid_body_configs = configuration.get('rigid bodies', [])
@@ -59,9 +57,20 @@ def configure_rigid_bodies(configuration):
             raise ValueError('rigid body configuration must include filename')
         dictionary_name = rigid_body_config.get('aruco dictionary',
                                                 'DICT_ARUCO_ORIGINAL')
+        try:
+            ar_dictionary_name = getattr(aruco, dictionary_name)
+        except AttributeError:
+            raise ImportError(('Failed when trying to import {} from cv2.'
+                               'aruco. Check dictionary exists.')
+                               .format(dictionary_name)) from AttributeError
+
         rigid_body.load_3d_points(filename, dictionary_name)
 
         rigid_bodies.append(rigid_body)
+        if dictionary_name not in ar_dict_names:
+            ar_dict_names.append(dictionary_name)
+            ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
+
         print (rigid_body_config)
 
     return ar_dicts, ar_dict_names, rigid_bodies
@@ -135,6 +144,7 @@ class ArUcoRigidBody():
         self._tags_2d = TwoDTags()
         self.name = rigid_body_name
         self._default_tags = None
+        self._dictionary_name = "Not Set"
 
     def set_2d_points(self, two_d_points, tag_ids):
         """
@@ -162,6 +172,7 @@ class ArUcoRigidBody():
 
         """
 
+        self._dictionary_name = dictionaryname
         ar_dictionary_name = getattr(aruco, dictionaryname)
         self._ar_board = load_board_from_file(filename, ar_dictionary_name)
 
@@ -203,9 +214,15 @@ class ArUcoRigidBody():
                             camera_projection_matrix, camera_distortion)
 
     def get_dictionary(self):
-        """returns the aruco dictionary in use"""
+        """returns the name of the aruco dictionary in use"""
 
         return self._ar_board.dictionary
+
+    def get_dictionary_name(self):
+        """returns the name of the aruco dictionary in use"""
+
+        return self._dictionary_name
+
 
     def _match_point_lists(self):
         """Turns 2d and 3d points into matched point list"""

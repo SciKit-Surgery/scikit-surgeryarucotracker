@@ -3,7 +3,7 @@
 """A class for straightforward tracking with an ARuCo
 """
 from time import time
-from numpy import array, float32, loadtxt
+from numpy import array, float32, loadtxt, ravel
 import cv2.aruco as aruco # pylint: disable=import-error
 from cv2 import VideoCapture, imshow
 import cv2
@@ -179,13 +179,14 @@ class ArUcoTracker(SKSBaseTracker):
 
             assigned_marker_ids = []
             for rigid_body in self._rigid_bodies:
-                if rigid_body.get_dictionary == ar_dict:
-                    assigned_marker_ids += rigid_body.set_2d_points(
-                                    marker_corners, marker_ids)
+                if rigid_body.get_dictionary_name() == \
+                                self._ar_dict_names[dict_index]:
+                    assigned_marker_ids.extend(rigid_body.set_2d_points(
+                                    marker_corners, marker_ids))
 
             #find any unassigned tags and create a rigid body for them
             for index, marker_id in enumerate(marker_ids):
-                if marker_id[0] not in assigned_marker_ids:
+                if marker_id[0] not in ravel(assigned_marker_ids):
                     temp_rigid_body = ArUcoRigidBody(
                                     str(self._ar_dict_names[dict_index]) +
                                     ":" + str(marker_id[0]))
