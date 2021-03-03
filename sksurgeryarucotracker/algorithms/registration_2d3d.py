@@ -133,17 +133,31 @@ def estimate_poses_no_calibration(marker_corners):
     rotation. No account is taken of the size of the
     model marker pattern, so it will be bit flakey.
     """
-    tracking = []
-    quality = []
-    for marker in marker_corners:
+    tracking = np.full((4,4), np.nan, dtype=np.float32)
+    quality = 0.0
 
-        means = np.mean(marker[0], axis=0)
-        size = _marker_size(marker[0])
-        tracking.append(np.array([[1.0, 0.0, 0.0, means[0]],
-                               [0.0, 1.0, 0.0, means[1]],
-                               [0.0, 0.0, 1.0, -size],
-                               [0.0, 0.0, 0.0, 1.0]], dtype=np.float32))
+    x_means = []
+    y_means = []
+    sizes = []
+
+    if len(marker_corners) > 0:
+        for marker in marker_corners:
+
+            means = np.mean(marker[0], axis=0)
+            x_means.append(means[0])
+            y_means.append(means[1])
+            sizes.append(_marker_size(marker[0]))
+
+        x_mean = np.mean(x_means)
+        y_mean = np.mean(y_means)
+        size = np.mean(sizes)
+
+        tracking = np.array([[1.0, 0.0, 0.0, x_mean],
+                             [0.0, 1.0, 0.0, y_mean],
+                             [0.0, 0.0, 1.0, -size],
+                             [0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
         quality = 1.0
+
     return tracking, quality
 
 def estimate_poses_with_calibration(marker_corners2d, marker_ids,
