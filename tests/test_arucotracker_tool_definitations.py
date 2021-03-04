@@ -129,3 +129,59 @@ def test_with_tool_descriptions():
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
     assert 'DICT_4X4_50:0' not in port_handles
+
+
+
+def test_with_tool_desc_and_calib():
+    """
+    connect track and close with multitags, defined
+    rigid bodies, and camera calibration
+    reqs: 03, 04 ,05, 07
+    """
+    config = {'video source' : 'data/multipattern.avi',
+              'calibration' : 'data/calibration.txt',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      {
+                        'name' : 'pointer',
+                        'filename' : 'data/pointer.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      }
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, timestamps, framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert len(port_handles) == len(timestamps)
+    assert len(port_handles) == len(framenumbers)
+    assert len(port_handles) == len(tracking)
+    assert len(port_handles) == len(quality)
+    assert len(port_handles) == 4 #there is an extraneous marker (1000)
+    assert 'reference' in port_handles
+    assert 'pointer' in port_handles
+    assert 'DICT_4X4_50:0' in port_handles
+
+    reference_index = port_handles.index('reference')
+    pointer_index = port_handles.index('pointer')
+
+    assert np.isclose(quality[reference_index], 0.91666666)
+    assert np.isclose(quality[pointer_index], 0.83333333)
+
+    ref_regression = np.array([
+        [-5.38857758e-01,  4.41101462e-01, -7.17678070e-01, -8.22903442e+01],
+        [-6.71269059e-01, -7.39561677e-01,  4.94606122e-02,  4.85032501e+01],
+        [-5.08950055e-01,  5.08407295e-01,  6.94616318e-01,  2.43992401e+02],
+        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
+        dtype=np.float32)
+
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+    tracker.stop_tracking()
+    tracker.close()

@@ -134,12 +134,11 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
     model marker pattern, so it will be bit flakey.
     """
     tracking = np.full((4,4), np.nan, dtype=np.float32)
-    quality = 0.0
+    quality = len(marker_corners) / len(aruco_board.ids)
 
     x_means = []
     y_means = []
     sizes = []
-    quality = len(marker_corners) / len(aruco_board.ids)
 
     if len(marker_corners) > 0:
         for marker in marker_corners:
@@ -161,7 +160,7 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
     return tracking, quality
 
 def estimate_poses_with_calibration(marker_corners2d, marker_ids,
-                board, camera_projection_matrix, camera_distortion):
+                aruco_board, camera_projection_matrix, camera_distortion):
     """
     Estimate the pose of a single tag or a multi-tag rigid body
     when the camera calibration is known.
@@ -175,43 +174,45 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     :return : a tracking matrix and a quality
     """
 
+    tracking = np.full((4,4), np.nan, dtype=np.float32)
+    quality = len(marker_ids) / len(aruco_board.ids)
+
     if len(marker_corners2d) == 1:
-        marker_width = board.objPoints[0][1][0] - board.objPoints[0][0][0]
+        marker_width = aruco_board.objPoints[0][1][0] \
+                        - aruco_board.objPoints[0][0][0]
         rvecs, tvecs, _ = \
             aruco.estimatePoseSingleMarkers(marker_corners2d, marker_width,
                                             camera_projection_matrix,
                                             camera_distortion)
-        tracking = []
-        t_index = 0
-        for rvec in rvecs:
-            rot_mat = construct_rotm_from_euler(rvec[0][0],rvec[0][1],
-                                                rvec[0][2], 'xyz',
-                                                is_in_radians=True)
-            tracking.append(construct_rigid_transformation(rot_mat,
-                                                       tvecs[t_index][0]))
-            t_index += 1
-        return tracking, 1.0
+        if not len(rvecs) == 1:
+            raise ValueError("Got too many rotation vectors for a" +
+                             "single tag.", len(rvecs))
 
-    print(marker_ids)
-    raise NotImplementedError
-    #
-    #rvec = np.empty((1,3), dtype = np.float32)
-    #tvec = np.empty((1,3), dtype = np.float32)
-    #rvecs, tvecs, _ = \
-    #    aruco.estimatePoseBoard(marker_corners2d, np.array([marker_ids]),
-    #                                board,
-    #                                camera_projection_matrix,
-    #                                camera_distortion,
-    #                                rvec,
-    #                                tvec)
-    #tracking = []
-    #t_index = 0
-    #print ("\nRVECS = ", rvecs)
-    #print ("\nRVEC = ", rvec)
-    #print ("\nTVEC = ", tvec)
-    #for rvec in rvecs:
-    #rot_mat = construct_rotm_from_euler(rvec[0],rvec[1],rvec[2], 'xyz',
-    #                                      is_in_radians=True)
-    #tracking.append(construct_rigid_transformation(rot_mat,
-    #                                               tvec))
-    #return tracking, 1.0
+        rvec = rvecs[0]
+        rot_mat = construct_rotm_from_euler(rvec[0][0],rvec[0][1],
+                                            rvec[0][2], 'xyz',
+                                            is_in_radians=True)
+        tracking = construct_rigid_transformation(rot_mat,
+                                                  tvecs[0][0])
+        return tracking, quality
+
+    rvec = np.empty((1,3), dtype = np.float32)
+    tvec = np.empty((1,3), dtype = np.float32)
+    markers_used, rvecs, tvecs = \
+        aruco.estimatePoseBoard(marker_corners2d, np.array([marker_ids]),
+                                    aruco_board,
+                                    camera_projection_matrix,
+                                    camera_distortion,
+                                    rvec,
+                                    tvec)
+
+    #marker ids should be presorted, so that all 2d markers are on board
+    assert markers_used == len(marker_ids)
+
+    rot_mat = construct_rotm_from_euler(rvecs[0],rvecs[1],
+                                        rvecs[2], 'xyz',
+                                        is_in_radians=True)
+    tracking = construct_rigid_transformation(rot_mat,
+                                              tvecs)
+
+    return tracking, quality
