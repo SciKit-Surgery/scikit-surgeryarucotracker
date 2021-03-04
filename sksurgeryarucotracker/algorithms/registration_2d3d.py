@@ -125,7 +125,7 @@ def _marker_size(marker_points):
     size = np.linalg.norm(maxs - mins)
     return size
 
-def estimate_poses_no_calibration(marker_corners):
+def estimate_poses_no_calibration(marker_corners, aruco_board):
     """
     Returns tracking data for a camera with no calibration data.
     x and y are the screen pixel coordinates.
@@ -139,6 +139,7 @@ def estimate_poses_no_calibration(marker_corners):
     x_means = []
     y_means = []
     sizes = []
+    quality = len(marker_corners) / len(aruco_board.ids)
 
     if len(marker_corners) > 0:
         for marker in marker_corners:
@@ -156,7 +157,6 @@ def estimate_poses_no_calibration(marker_corners):
                              [0.0, 1.0, 0.0, y_mean],
                              [0.0, 0.0, 1.0, -size],
                              [0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
-        quality = 1.0
 
     return tracking, quality
 

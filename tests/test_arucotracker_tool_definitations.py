@@ -2,6 +2,7 @@
 
 """scikit-surgeryarucotracker tests"""
 
+import numpy as np
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
 
@@ -91,7 +92,18 @@ def test_with_tool_descriptions():
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
     assert 'DICT_4X4_50:0' in port_handles
-    print(tracking)
+
+    reference_index = port_handles.index('reference')
+
+    ref_regression = np.array([[ 1., 0., 0., 135.38637],
+                               [ 0., 1., 0., 272.5],
+                               [ 0., 0., 1., -57.1915 ],
+                               [ 0., 0., 0., 1. ]], dtype=np.float32)
+
+    assert np.allclose(tracking[reference_index], ref_regression)
+    assert np.isclose(quality[reference_index], 0.91666666)
+    pointer_index = port_handles.index('pointer')
+    assert np.isclose(quality[pointer_index], 0.83333333)
 
     #then try again after setting some rigid bodies
     #look at image quality, we could have so that quality = detected tags /

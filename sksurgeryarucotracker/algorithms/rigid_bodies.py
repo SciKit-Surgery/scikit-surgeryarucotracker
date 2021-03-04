@@ -206,7 +206,8 @@ class ArUcoRigidBody():
         """
         #points3d, points2d = self._match_point_lists()
         if camera_projection_matrix is None:
-            return estimate_poses_no_calibration(self._tags_2d.points)
+            return estimate_poses_no_calibration(self._tags_2d.points,
+                                                 self._ar_board)
 
         return estimate_poses_with_calibration(
                         self._tags_2d.points, self._tags_2d.ids,
