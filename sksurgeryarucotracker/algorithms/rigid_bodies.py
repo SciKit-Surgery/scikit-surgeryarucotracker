@@ -213,7 +213,6 @@ class ArUcoRigidBody():
             None we estimate pose based on pattern size
         :param: 1x5 camera distortion vector
         """
-        #points3d, points2d = self._match_point_lists()
         if camera_projection_matrix is None:
             return estimate_poses_no_calibration(self._tags_2d.points,
                                                  self._ar_board)
@@ -227,19 +226,3 @@ class ArUcoRigidBody():
         """returns the name of the aruco dictionary in use"""
 
         return self._dictionary_name
-
-
-    def _match_point_lists(self):
-        """Turns 2d and 3d points into matched point list"""
-        points3d = []
-        points2d = []
-
-        for index3d, tag_id in enumerate(self._ar_board.ids):
-            try:
-                index2d = self._tags_2d.ids.index(tag_id)
-                points3d.append(self._ar_board.objPoints[index3d])
-                points2d.append(self._tags_2d.points[index2d])
-            except ValueError:
-                pass
-
-        return points3d, points2d
