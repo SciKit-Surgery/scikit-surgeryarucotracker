@@ -6,15 +6,13 @@ from sksurgeryarucotracker.algorithms.registration_2d3d import \
                 estimate_poses_no_calibration, estimate_poses_with_calibration
 
 
-def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
+def _make_aruco_board(markers, dictionary):
     """
-    loads marker pattern from filename.
-    :return: an aruco.board
-    :raise ValueError: If the file does not have 16 or 13 columns
+    Makes a cv2.aruco.board from an array of 5 or 4 3D points plus
+    marker IDs. First column of markers should be marker ids,
+    next 15 or 12 columns are 3d coordinates
     """
-    markers = numpy.loadtxt(filename)
     dictionary = aruco.getPredefinedDictionary(dictionary)
-
     #format of ID first, then 15 or 12 columns
     boardshape=markers.shape
     if boardshape[0] < 1:
@@ -28,6 +26,17 @@ def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
         markerpoints = markers[:,4:16].astype('float32')
 
     return aruco.Board_create(markerpoints, dictionary, marker_ids)
+
+
+def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
+    """
+    loads marker pattern from filename.
+    :return: an aruco.board
+    :raise ValueError: If the file does not have 16 or 13 columns
+    """
+    markers = numpy.loadtxt(filename)
+
+    return _make_aruco_board(markers, dictionary)
 
 
 def configure_rigid_bodies(configuration):
