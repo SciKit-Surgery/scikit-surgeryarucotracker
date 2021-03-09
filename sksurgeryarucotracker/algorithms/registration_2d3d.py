@@ -79,9 +79,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
             aruco.estimatePoseSingleMarkers(marker_corners2d, marker_width,
                                             camera_projection_matrix,
                                             camera_distortion)
-        if not len(rvecs) == 1:
-            raise ValueError("Got too many rotation vectors for a" +
-                             "single tag.", len(rvecs))
+        assert len(rvecs) == 1
 
         rvec = rvecs[0]
         rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
