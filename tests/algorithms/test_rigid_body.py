@@ -34,3 +34,25 @@ def test_make_aruco_wrong_board():
         board = np.zeros((1,4),dtype = np.float64)
         rgbd._make_aruco_board(board, aruco.DICT_ARUCO_ORIGINAL) \
                         #pylint: disable=protected-access
+
+
+def test_configuration():
+    """
+    Tests for the configuration routine.
+    """
+    #should throw a value error if there is no filename
+    configuration = {
+                        'rigid bodies' : [{}]
+                    }
+    with pytest.raises(ValueError):
+        rgbd.configure_rigid_bodies(configuration)
+
+    #should throw a value error for a made up dictionary
+    configuration = {
+                        'rigid bodies' : [{
+                             'filename' : 'data/reference.txt',
+                             'aruco dictionary' : 'made up'
+                        }]
+                    }
+    with pytest.raises(ImportError):
+        rgbd.configure_rigid_bodies(configuration)
