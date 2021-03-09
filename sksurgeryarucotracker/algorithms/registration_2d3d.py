@@ -84,7 +84,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
                              "single tag.", len(rvecs))
 
         rvec = rvecs[0]
-        rot_mat = construct_rotm_from_euler(rvec[0][0],rvec[0][1],
+        rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
                                             rvec[0][2], 'xyz',
                                             is_in_radians=True)
         tracking = construct_rigid_transformation(rot_mat,
@@ -104,8 +104,8 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     #marker ids should be presorted, so that all 2d markers are on board
     assert markers_used == len(marker_ids)
 
-    rot_mat = construct_rotm_from_euler(rvecs[0],rvecs[1],
-                                        rvecs[2], 'xyz',
+    rot_mat = construct_rotm_from_euler(rvecs[0][0],rvecs[1][0],
+                                        rvecs[2][0], 'xyz',
                                         is_in_radians=True)
     tracking = construct_rigid_transformation(rot_mat,
                                               tvecs)
