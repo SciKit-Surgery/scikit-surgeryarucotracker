@@ -223,11 +223,6 @@ class ArUcoRigidBody():
                             self._ar_board,
                             camera_projection_matrix, camera_distortion)
 
-    def get_dictionary(self):
-        """returns the name of the aruco dictionary in use"""
-
-        return self._ar_board.dictionary
-
     def get_dictionary_name(self):
         """returns the name of the aruco dictionary in use"""
 
