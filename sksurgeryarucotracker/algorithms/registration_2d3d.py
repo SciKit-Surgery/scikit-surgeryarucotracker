@@ -72,6 +72,9 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     tracking = np.full((4,4), np.nan, dtype=np.float32)
     quality = len(marker_ids) / len(aruco_board.ids)
 
+    if len(marker_corners2d) == 0: 
+        return tracking, quality
+
     if len(marker_corners2d) == 1:
         marker_width = aruco_board.objPoints[0][1][0] \
                         - aruco_board.objPoints[0][0][0]

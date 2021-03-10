@@ -220,25 +220,18 @@ def test_with_tool_desc_no_tags_no_calib():
     assert len(port_handles) == len(framenumbers)
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
-    assert len(port_handles) == 4 #there is an extraneous marker (1000)
+    assert len(port_handles) == 2 #there is an extraneous marker (1000)
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
-    assert 'DICT_4X4_50:0' in port_handles
 
     reference_index = port_handles.index('reference')
     pointer_index = port_handles.index('pointer')
 
-    assert np.isclose(quality[reference_index], 0.91666666)
-    assert np.isclose(quality[pointer_index], 0.83333333)
+    assert quality[reference_index] == 0
+    assert quality[pointer_index] == 0
 
-    ref_regression = np.array([
-        [-5.38857758e-01,  4.41101462e-01, -7.17678070e-01, -8.22903442e+01],
-        [-6.71269059e-01, -7.39561677e-01,  4.94606122e-02,  4.85032501e+01],
-        [-5.08950055e-01,  5.08407295e-01,  6.94616318e-01,  2.43992401e+02],
-        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
-        dtype=np.float32)
-
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert np.all(np.isnan(tracking[reference_index]))
+    assert np.all(np.isnan(tracking[pointer_index]))
 
     tracker.stop_tracking()
     tracker.close()
@@ -277,25 +270,18 @@ def test_with_tool_desc_no_tags_and_calib():
     assert len(port_handles) == len(framenumbers)
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
-    assert len(port_handles) == 4 #there is an extraneous marker (1000)
+    assert len(port_handles) == 2 
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
-    assert 'DICT_4X4_50:0' in port_handles
 
     reference_index = port_handles.index('reference')
     pointer_index = port_handles.index('pointer')
 
-    assert np.isclose(quality[reference_index], 0.91666666)
-    assert np.isclose(quality[pointer_index], 0.83333333)
+    assert quality[reference_index] == 0
+    assert quality[pointer_index] == 0
 
-    ref_regression = np.array([
-        [-5.38857758e-01,  4.41101462e-01, -7.17678070e-01, -8.22903442e+01],
-        [-6.71269059e-01, -7.39561677e-01,  4.94606122e-02,  4.85032501e+01],
-        [-5.08950055e-01,  5.08407295e-01,  6.94616318e-01,  2.43992401e+02],
-        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
-        dtype=np.float32)
-
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert np.all(np.isnan(tracking[reference_index]))
+    assert np.all(np.isnan(tracking[pointer_index]))
 
     tracker.stop_tracking()
     tracker.close()
