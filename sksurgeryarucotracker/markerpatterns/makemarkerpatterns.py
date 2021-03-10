@@ -1,6 +1,7 @@
 #  -*- coding: utf-8 -*-
 
-"""Convenience function to make ArUco marker patterns
+"""
+Convenience functions to make ArUco marker patterns
 """
 
 import numpy

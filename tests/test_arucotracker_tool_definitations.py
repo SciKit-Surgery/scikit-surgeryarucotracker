@@ -187,11 +187,11 @@ def test_with_tool_desc_and_calib():
     tracker.close()
 
 
-def test_with_tool_desc_no_tags_no_calib():
+def test_with_no_tags_no_calib():
     """
     connect track and close with multitags, defined
     rigid bodies, but no tags
-    visible, should return an NaN matrix for each 
+    visible, should return an NaN matrix for each
     undetected body
     reqs: 03, 04 ,05, 07
     """
@@ -236,11 +236,11 @@ def test_with_tool_desc_no_tags_no_calib():
     tracker.stop_tracking()
     tracker.close()
 
-def test_with_tool_desc_no_tags_and_calib():
+def test_with_no_tags_and_calib():
     """
     connect track and close with multitags, defined
     rigid bodies, but no tags
-    visible, should return an NaN matrix for each 
+    visible, should return an NaN matrix for each
     undetected body
     reqs: 03, 04 ,05, 07
     """
@@ -270,7 +270,7 @@ def test_with_tool_desc_no_tags_and_calib():
     assert len(port_handles) == len(framenumbers)
     assert len(port_handles) == len(tracking)
     assert len(port_handles) == len(quality)
-    assert len(port_handles) == 2 
+    assert len(port_handles) == 2
     assert 'reference' in port_handles
     assert 'pointer' in port_handles
 
