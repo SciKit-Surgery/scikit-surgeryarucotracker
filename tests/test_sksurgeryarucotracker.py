@@ -62,6 +62,29 @@ def test_no_video_single_tag():
     tracker.close()
 
 
+def test_no_video_no_tag():
+    """
+    no errors when no tags detected
+    works on static images
+    reqs: 03, 04 ,05
+    """
+    config = {'video source' : 'none'}
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+    image = np.zeros((640, 480, 3), dtype=np.uint8)
+    (port_handles, timestamps, framenumbers,
+    tracking, quality) = tracker.get_frame(image)
+    assert len(port_handles) == len(timestamps)
+    assert len(port_handles) == len(framenumbers)
+    assert len(port_handles) == len(tracking)
+    assert len(port_handles) == len(quality)
+    assert len(port_handles) == 0
+
+    tracker.stop_tracking()
+    tracker.close()
+
+
 def test_on_video_with_debug():
     """
     connect track and close with single tag, with debug flag on
