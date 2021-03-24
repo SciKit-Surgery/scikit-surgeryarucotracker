@@ -131,6 +131,61 @@ def test_with_tool_descriptions():
     assert 'DICT_4X4_50:0' not in port_handles
 
 
+def test_iteration_over_empty_dicts():
+    """
+    Tests that when no markers are detected in an early
+    dictionary, we continue to iterate over the remainder
+    issue #29
+    """
+
+    config = {'video source' : 'data/multipattern.avi',
+              'rigid bodies' : [
+                      {
+                        'name' : 'bad_pointer',
+                        'filename' : 'data/pointer.txt',
+                        'aruco dictionary' : 'DICT_7X7_250'
+                      },
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      {
+                        'name' : 'good_pointer',
+                        'filename' : 'data/pointer.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, timestamps, framenumbers,
+     tracking, quality) = tracker.get_frame()
+    print(port_handles)
+    assert len(port_handles) == len(timestamps)
+    assert len(port_handles) == len(framenumbers)
+    assert len(port_handles) == len(tracking)
+    assert len(port_handles) == len(quality)
+    assert len(port_handles) == 5
+    assert 'reference' in port_handles
+    assert 'bad_pointer' in port_handles
+    assert 'good_pointer' in port_handles
+    assert 'DICT_4X4_50:0' in port_handles
+
+    ref_regression = np.array([[ 1., 0., 0., 135.38637],
+                               [ 0., 1., 0., 272.5],
+                               [ 0., 0., 1., -57.1915 ],
+                               [ 0., 0., 0., 1. ]], dtype=np.float32)
+
+    pointer_index = port_handles.index('bad_pointer')
+    assert np.all(np.isnan(tracking[pointer_index]))
+
+    reference_index = port_handles.index('reference')
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+
 
 def test_with_tool_desc_and_calib():
     """
