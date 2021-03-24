@@ -172,7 +172,7 @@ class ArUcoTracker(SKSBaseTracker):
             marker_corners, marker_ids, _ = \
                     aruco.detectMarkers(frame, ar_dict)
             if not marker_corners:
-                break
+                continue
 
             if self._debug:
                 aruco.drawDetectedMarkers(frame, marker_corners)
