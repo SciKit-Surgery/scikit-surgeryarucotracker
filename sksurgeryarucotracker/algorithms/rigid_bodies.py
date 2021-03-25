@@ -80,8 +80,6 @@ def configure_rigid_bodies(configuration):
             ar_dict_names.append(dictionary_name)
             ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
 
-        print (rigid_body_config)
-
     return ar_dicts, ar_dict_names, rigid_bodies
 
 

@@ -5,7 +5,6 @@
 from time import time
 from numpy import array, float32, loadtxt, ravel
 import cv2.aruco as aruco # pylint: disable=import-error
-from cv2 import VideoCapture, imshow
 import cv2
 
 
@@ -25,12 +24,6 @@ def _load_calibration(textfile):
 
 class ArUcoTracker(SKSBaseTracker):
     """
-    Base class for communication with trackers.
-    Ideally all surgery tracker classes will implement
-    this interface
-    """
-    def __init__(self, configuration):
-        """
         Initialises and Configures the ArUco detector
 
         :param configuration: A dictionary containing details of the tracker.
@@ -41,7 +34,7 @@ class ArUcoTracker(SKSBaseTracker):
 
             marker size: defaults to 50 mm
 
-            camera projection matrix: defaults to None
+            camera projection: defaults to None
 
             camera distortion: defaults to None
 
@@ -51,6 +44,8 @@ class ArUcoTracker(SKSBaseTracker):
 
         :raise Exception: ImportError, ValueError
         """
+
+    def __init__(self, configuration):
 
         self._camera_projection_matrix = configuration.get("camera projection",
                                                            None)
@@ -66,7 +61,7 @@ class ArUcoTracker(SKSBaseTracker):
         video_source = configuration.get("video source", 0)
 
         if video_source != 'none':
-            self._capture = VideoCapture()
+            self._capture = cv2.VideoCapture()
         else:
             self._capture = None
 
@@ -165,7 +160,7 @@ class ArUcoTracker(SKSBaseTracker):
         timestamp = time()
 
         if self._debug:
-            imshow('frame', frame)
+            cv2.imshow('frame', frame)
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
