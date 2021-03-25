@@ -3,7 +3,7 @@
 """A class for straightforward tracking with an ARuCo
 """
 from time import time
-from numpy import array, float32, loadtxt, ravel
+from numpy import array, float32, loadtxt, ravel, float64
 import cv2.aruco as aruco # pylint: disable=import-error
 import cv2
 
@@ -101,7 +101,8 @@ class ArUcoTracker(SKSBaseTracker):
             return
 
         if (self._camera_projection_matrix.shape == (3, 3) and
-                self._camera_projection_matrix.dtype == float32):
+                (self._camera_projection_matrix.dtype in [float32,
+                        float64, float])):
             return
 
         raise ValueError(('Camera projection matrix needs to be 3x3 and'
