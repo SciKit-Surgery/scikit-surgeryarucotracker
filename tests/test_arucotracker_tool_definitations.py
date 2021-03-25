@@ -242,6 +242,157 @@ def test_with_tool_desc_and_calib():
     tracker.close()
 
 
+def test_tool_desc_and_float64():
+    """
+    connect track and close with multitags, defined
+    rigid bodies, and camera calibration, defined with
+    different data types, issue #31
+    reqs: 03, 04 ,05, 07
+    """
+    config = {'video source' : 'data/multipattern.avi',
+              'calibration' : 'data/calibration.txt',
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, _timestamps, _framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert 'reference' in port_handles
+
+    reference_index = port_handles.index('reference')
+
+    assert np.isclose(quality[reference_index], 0.91666666)
+
+    ref_regression = np.array([
+        [-5.38857758e-01,  4.41101462e-01, -7.17678070e-01, -8.22903442e+01],
+        [-6.71269059e-01, -7.39561677e-01,  4.94606122e-02,  4.85032501e+01],
+        [-5.08950055e-01,  5.08407295e-01,  6.94616318e-01,  2.43992401e+02],
+        [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
+        dtype=np.float32)
+
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+    tracker.stop_tracking()
+    tracker.close()
+    port_handles = None
+    tracking = None
+    quality = None
+
+    #again, but this time set calibration and distortion separately
+    calib_mtx = np.array([[560.0, 0.0, 320.0],
+                          [0.0, 560.0, 240.0],
+                          [0.0, 0.0, 1.0]], dtype = np.float32)
+    distortion = np.array([0.1, 0.0, 0.0, 0.0, 0.0], dtype = np.float32)
+    config = {'video source' : 'data/multipattern.avi',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, _timestamps, _framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert 'reference' in port_handles
+
+    reference_index = port_handles.index('reference')
+
+    assert np.isclose(quality[reference_index], 0.91666666)
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+    tracker.stop_tracking()
+    tracker.close()
+    port_handles = None
+    tracking = None
+    quality = None
+
+    #again, but this time set calibration and distortion as float64
+    calib_mtx = np.array([[560.0, 0.0, 320.0],
+                          [0.0, 560.0, 240.0],
+                          [0.0, 0.0, 1.0]], dtype = np.float64)
+    distortion = np.array([0.1, 0.0, 0.0, 0.0, 0.0], dtype = np.float64)
+    config = {'video source' : 'data/multipattern.avi',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, _timestamps, _framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert 'reference' in port_handles
+
+    reference_index = port_handles.index('reference')
+
+    assert np.isclose(quality[reference_index], 0.91666666)
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+    tracker.stop_tracking()
+    tracker.close()
+    port_handles = None
+    tracking = None
+    quality = None
+
+    #again, but this time set calibration and distortion as float
+    calib_mtx = np.array([[560.0, 0.0, 320.0],
+                          [0.0, 560.0, 240.0],
+                          [0.0, 0.0, 1.0]], dtype = float)
+    distortion = np.array([0.1, 0.0, 0.0, 0.0, 0.0], dtype = float)
+    config = {'video source' : 'data/multipattern.avi',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      },
+                      ]
+              }
+
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    (port_handles, _timestamps, _framenumbers,
+     tracking, quality) = tracker.get_frame()
+    assert 'reference' in port_handles
+
+    reference_index = port_handles.index('reference')
+
+    assert np.isclose(quality[reference_index], 0.91666666)
+    assert np.allclose(tracking[reference_index], ref_regression)
+
+    tracker.stop_tracking()
+    tracker.close()
+
+
 def test_with_no_tags_no_calib():
     """
     connect track and close with multitags, defined
