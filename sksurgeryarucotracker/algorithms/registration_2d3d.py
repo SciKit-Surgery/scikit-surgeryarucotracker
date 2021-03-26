@@ -2,10 +2,9 @@
 
 import numpy as np
 import cv2.aruco as aruco # pylint: disable=import-error
+from cv2 import Rodrigues
 
-from sksurgerycore.transforms.matrix import (construct_rotm_from_euler,
-                                             construct_rigid_transformation,
-                                             )
+from sksurgerycore.transforms.matrix import construct_rigid_transformation
 
 def _marker_size(marker_points):
     """
@@ -85,9 +84,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
         assert len(rvecs) == 1
 
         rvec = rvecs[0]
-        rot_mat = construct_rotm_from_euler(rvec[0][0], rvec[0][1],
-                                            rvec[0][2], 'xyz',
-                                            is_in_radians=True)
+        rot_mat, _jacobian = Rodrigues(rvec[0])
         tracking = construct_rigid_transformation(rot_mat,
                                                   tvecs[0][0])
         return tracking, quality
@@ -105,9 +102,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     #marker ids should be presorted, so that all 2d markers are on board
     assert markers_used == len(marker_ids)
 
-    rot_mat = construct_rotm_from_euler(rvecs[0][0],rvecs[1][0],
-                                        rvecs[2][0], 'xyz',
-                                        is_in_radians=True)
+    rot_mat, _jacobian = Rodrigues(rvecs[:,0])
     tracking = construct_rigid_transformation(rot_mat,
                                               tvecs)
 
