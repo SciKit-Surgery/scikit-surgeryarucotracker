@@ -157,14 +157,12 @@ class ArUcoTracker(SKSBaseTracker):
         frame_numbers = []
         tracking = []
         quality = []
+        self._reset_rigid_bodies()
 
         timestamp = time()
 
         if self._debug:
             cv2.imshow('frame', frame)
-
-        for rigid_body in self._rigid_bodies:
-            rigid_body.reset_2d_points()
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
@@ -232,3 +230,10 @@ class ArUcoTracker(SKSBaseTracker):
             self._state = "ready"
         else:
             raise ValueError('Attempted to stop tracking, when not tracking')
+
+    def _reset_rigid_bodies(self):
+        """
+        clears 2d points from all rigid bodies
+        """
+        for rigid_body in self._rigid_bodies:
+            rigid_body.reset_2d_points()

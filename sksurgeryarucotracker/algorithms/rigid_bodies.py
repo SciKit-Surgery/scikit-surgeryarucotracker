@@ -163,6 +163,9 @@ class ArUcoRigidBody():
         self._dictionary_name = "Not Set"
 
     def reset_2d_points(self):
+        """
+        Clears 2D point lists.
+        """
         self._tags_2d = TwoDTags()
 
     def set_2d_points(self, two_d_points, tag_ids):

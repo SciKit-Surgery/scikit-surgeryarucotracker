@@ -10,10 +10,24 @@ from sksurgerycore.algorithms.tracking_smoothing import RollingMean, \
 
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
+def ccw_to_cw(ccw_points):
+    """
+    Converts counter clockwise points to clockwise points
+    """
+    cw_points = ccw_points.copy()
+    cw_points[:, 4:7] = ccw_points[:, 13:16]
+    cw_points[:, 7:10] = ccw_points[:, 10:13]
+    cw_points[:, 10:13] = ccw_points[:, 7:10]
+    cw_points[:, 13:16] = ccw_points[:, 4:7]
+    return cw_points
+
+
 class Registration2D3D():
     """
     Performs registration of sets of 2D points to 3D points. This
-    is copied from BARD'S registration2D3D
+    is copied from BARD'S registration2D3D. The intent is to
+    ensure that tracking behaves in the same way as BARD, which
+    is reasonably well tested by users.
     """
 
     def __init__(self, three_d_points, projection_matrix, distortion,
@@ -38,6 +52,13 @@ class Registration2D3D():
         if three_d_points is None or three_d_points.any() is None:
             self._no_points = True
             return
+
+        boardshape = three_d_points.shape
+        try:
+            _ = boardshape[1]
+        except IndexError:
+            three_d_points = three_d_points.reshape(1, boardshape[0])
+            boardshape=three_d_points.shape
 
         if three_d_points.shape[1] != 16:
             raise ValueError("Three_d_points should have 16 columns")
@@ -108,10 +129,19 @@ class Registration2D3D():
             points3d = np.array(points3d).reshape((count*4), 3)
             points2d = np.array(points2d).reshape((count*4), 2)
 
-            _, rvec, tvec = cv.solvePnP(points3d, points2d,
-                                         self._projection_matrix,
-                                         self._distortion)
-            print("solve pnp rvec \n", rvec)
+            if count > 1:
+                _, rvec, tvec = cv.solvePnP(points3d, points2d,
+                                             self._projection_matrix,
+                                             self._distortion)
+                # flags = cv.SOLVEPNP_SQPNP)
+            else:
+                _, rvec, tvec = cv.solvePnP(points3d, points2d,
+                                             self._projection_matrix,
+                                             self._distortion)
+                #   flags = cv.SOLVEPNP_IPPE)
+
+
+
         return rvec, tvec
 
 def test_arucotracker_vs_solve_pnp():
@@ -186,4 +216,166 @@ def test_arucotracker_vs_solve_pnp():
     assert success
     assert np.allclose(modelreference2camera, ref_regression)
 
+    capture.release()
+
+
+def test_vs_solve_pnp_with_smth():
+    """
+    This checks whether the tracking result using skarucotracker
+    matches that when using the solvePnP approach as originally
+    implemented by scikit-surgeryBARAD, with the addition of
+    tracking smoothing
+    """
+    calib_mtx = np.array([[608.67179504, 0.00000000, 323.12263928],
+                          [0.00000000, 606.13421375, 231.29247171],
+                          [0.0, 0.0, 1.0]], dtype = np.float64)
+    distortion = np.array([-0.02191634, -0.14300148, -0.00395124,
+                           -0.00044941, 0.19656551], dtype = np.float64)
+    videofile = 'data/multipattern.avi'
+
+    config = {'video source' : 'none',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/reference.txt',
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                      }
+                      ]
+              }
+
+    capture = cv.VideoCapture(videofile)
+    #set up skarucotracker
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+
+    #set up solvepnp
+    three_d_points = np.loadtxt('data/reference.txt')
+
+    reference_register = Registration2D3D(three_d_points,
+                                          calib_mtx, distortion,
+                                          buffer_size=1)
+
+    #first frame
+    for _frame in range(10):
+        _, image = capture.read()
+        (port_handles, _timestamps, _framenumbers,
+        tracking, _quality) = tracker.get_frame(image)
+
+        assert 'reference' in port_handles
+        reference_index = port_handles.index('reference')
+
+        aruco_reference_tracking = tracking[reference_index]
+
+
+        #now try again using our own implementation using cv.solvepnp as
+        #formerly implemented in BARD
+        marker_corners, ids, _ = aruco.detectMarkers(image,
+                       aruco.getPredefinedDictionary(
+                                aruco.DICT_ARUCO_ORIGINAL))
+        #according to documentation the order of aruco.detectMarkers
+        #is clockwise,
+        #whereas aruco.create_board is ccw?
+
+        success, modelreference2camera = \
+                    reference_register.get_matrix(
+                        ids, marker_corners)
+
+        assert success
+        assert np.allclose(modelreference2camera, aruco_reference_tracking,
+                        rtol = 1e-5)
+
+    tracker.stop_tracking()
+    tracker.close()
+    capture.release()
+
+
+def test_vs_solve_pnp_singletag():
+    """
+    This checks whether the tracking result using skarucotracker
+    matches that when using the solvePnP approach as originally
+    implemented by scikit-surgeryBARAD, with the addition of
+    tracking smoothing
+    """
+    calib_mtx = np.array([[608.67179504, 0.00000000, 323.12263928],
+                          [0.00000000, 606.13421375, 231.29247171],
+                          [0.0, 0.0, 1.0]], dtype = np.float64)
+    distortion = np.array([-0.02191634, -0.14300148, -0.00395124,
+                           -0.00044941, 0.19656551], dtype = np.float64)
+    videofile = 'data/output.avi'
+
+    config = {'video source' : 'none',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'rigid bodies' : [
+                      {
+                        'name' : 'reference',
+                        'filename' : 'data/tag_0.txt',
+                        'aruco dictionary' : 'DICT_4X4_50'
+                      }
+                      ]
+              }
+
+    config2 = {'video source' : 'none',
+              'camera projection' : calib_mtx,
+              'camera distortion' : distortion,
+              'aruco dictionary' : 'DICT_4X4_50',
+              'marker size' : 33
+              }
+
+
+    capture = cv.VideoCapture(videofile)
+    #set up skarucotracker
+    tracker = ArUcoTracker(config)
+    tracker.start_tracking()
+    tracker2 = ArUcoTracker(config2)
+    tracker2.start_tracking()
+
+    #set up solvepnp
+    three_d_points = np.loadtxt('data/tag_0.txt')
+    three_d_points = three_d_points.reshape(1, 16)
+    three_d_points = ccw_to_cw(three_d_points)
+
+    reference_register = Registration2D3D(three_d_points,
+                                          calib_mtx, distortion,
+                                          buffer_size=1)
+
+    for _frame in range(10):
+        _, image = capture.read()
+        (port_handles, _timestamps, _framenumbers,
+        tracking, _quality) = tracker.get_frame(image)
+
+        assert 'reference' in port_handles
+        reference_index = port_handles.index('reference')
+
+        aruco_reference_tracking = tracking[reference_index]
+
+        (port_handles, _timestamps, _framenumbers,
+        tracking, _quality) = tracker2.get_frame(image)
+
+        assert 'DICT_4X4_50:0' in port_handles
+        reference_index = port_handles.index('DICT_4X4_50:0')
+
+        aruco_reference_tracking2= tracking[reference_index]
+
+        #now try again using our own implementation using cv.solvepnp as
+        #formerly implemented in BARD
+        marker_corners, ids, _ = aruco.detectMarkers(image,
+                       aruco.getPredefinedDictionary(
+                                aruco.DICT_4X4_50))
+
+        success, modelreference2camera = \
+                    reference_register.get_matrix(
+                        ids, marker_corners)
+        assert success
+        assert np.allclose(modelreference2camera, aruco_reference_tracking,
+                        rtol = 1e-5)
+        assert np.allclose(modelreference2camera, aruco_reference_tracking2,
+                        rtol = 1e-5)
+
+    tracker.stop_tracking()
+    tracker.close()
     capture.release()
