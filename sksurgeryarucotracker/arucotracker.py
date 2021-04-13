@@ -163,6 +163,9 @@ class ArUcoTracker(SKSBaseTracker):
         if self._debug:
             cv2.imshow('frame', frame)
 
+        for rigid_body in self._rigid_bodies:
+            rigid_body.reset_2d_points()
+
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
             marker_corners, marker_ids, _ = \
