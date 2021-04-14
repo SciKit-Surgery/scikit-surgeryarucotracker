@@ -24,8 +24,8 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
     rotation. No account is taken of the size of the
     model marker pattern, so it will be bit flakey.
     """
-    tracking_rot = np.zeros((1,3), dtype = float)
-    tracking_trans = np.zeros((1,3), dtype = float)
+    tracking_rot = np.full((1,3), np.nan, dtype = float)
+    tracking_trans = np.full((1,3), np.nan, dtype = float)
     quality = len(marker_corners) / len(aruco_board.ids)
 
     x_means = []
@@ -33,6 +33,8 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
     sizes = []
 
     if len(marker_corners) > 0:
+        tracking_rot = np.zeros((1,3), dtype = float)
+        tracking_trans = np.zeros((1,3), dtype = float)
         for marker in marker_corners:
 
             means = np.mean(marker[0], axis=0)
@@ -65,8 +67,8 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     :return : a tracking rotation, translation and a quality
     """
 
-    tracking_rot = np.zeros((1,3), dtype = float)
-    tracking_trans = np.zeros((1,3), dtype = float)
+    tracking_rot = np.full((1,3), np.nan, dtype = float)
+    tracking_trans = np.full((1,3), np.nan, dtype = float)
     quality = len(marker_ids) / len(aruco_board.ids)
 
     if len(marker_corners2d) == 0:
