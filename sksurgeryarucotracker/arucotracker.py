@@ -38,9 +38,12 @@ class ArUcoTracker(SKSBaseTracker):
 
             camera distortion: defaults to None
 
+            smoothing buffer: specify a buffer over which to average the
+            tracking, defaults to 1
+
             rigid bodies: a list of rigid bodies to track, each body should
-                have a name, a filename where the tag geometry is defined,
-                and an aruco dictionary to use
+            have a 'name', a 'filename' where the tag geometry is defined,
+            and an 'aruco dictionary' to use
 
         :raise Exception: ImportError, ValueError
         """
