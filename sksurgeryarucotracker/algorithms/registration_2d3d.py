@@ -2,9 +2,6 @@
 
 import numpy as np
 import cv2.aruco as aruco # pylint: disable=import-error
-from cv2 import Rodrigues
-
-from sksurgerycore.transforms.matrix import construct_rigid_transformation
 
 def _marker_size(marker_points):
     """
@@ -27,7 +24,8 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
     rotation. No account is taken of the size of the
     model marker pattern, so it will be bit flakey.
     """
-    tracking = np.full((4,4), np.nan, dtype=np.float32)
+    tracking_rot = np.zeros((1,3), dtype = float)
+    tracking_trans = np.zeros((1,3), dtype = float)
     quality = len(marker_corners) / len(aruco_board.ids)
 
     x_means = []
@@ -46,12 +44,11 @@ def estimate_poses_no_calibration(marker_corners, aruco_board):
         y_mean = np.mean(y_means)
         size = np.mean(sizes)
 
-        tracking = np.array([[1.0, 0.0, 0.0, x_mean],
-                             [0.0, 1.0, 0.0, y_mean],
-                             [0.0, 0.0, 1.0, -size],
-                             [0.0, 0.0, 0.0, 1.0]], dtype=np.float32)
+        tracking_trans[0][0] = x_mean
+        tracking_trans[0][1] = y_mean
+        tracking_trans[0][2] = -size
 
-    return tracking, quality
+    return tracking_rot, tracking_trans, quality
 
 def estimate_poses_with_calibration(marker_corners2d, marker_ids,
                 aruco_board, camera_projection_matrix, camera_distortion):
@@ -65,14 +62,15 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     :param camera_projection_matrix: a 3x3 camera projection matrix
     :param camera_distortion: camera distortion vector
 
-    :return : a tracking matrix and a quality
+    :return : a tracking rotation, translation and a quality
     """
 
-    tracking = np.full((4,4), np.nan, dtype=np.float32)
+    tracking_rot = np.zeros((1,3), dtype = float)
+    tracking_trans = np.zeros((1,3), dtype = float)
     quality = len(marker_ids) / len(aruco_board.ids)
 
     if len(marker_corners2d) == 0:
-        return tracking, quality
+        return tracking_rot, tracking_trans, quality
 
     if len(marker_corners2d) == 1:
         marker_width = aruco_board.objPoints[0][1][0] \
@@ -82,12 +80,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
                                             camera_projection_matrix,
                                             camera_distortion)
         assert len(rvecs) == 1
-
-        rvec = rvecs[0]
-        rot_mat, _jacobian = Rodrigues(rvec[0])
-        tracking = construct_rigid_transformation(rot_mat,
-                                                  tvecs[0][0])
-        return tracking, quality
+        return rvecs[0], tvecs[0][0], quality
 
     rvec = np.empty((1,3), dtype = np.float32)
     tvec = np.empty((1,3), dtype = np.float32)
@@ -102,8 +95,4 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
     #marker ids should be presorted, so that all 2d markers are on board
     assert markers_used == len(marker_ids)
 
-    rot_mat, _jacobian = Rodrigues(rvecs[:,0])
-    tracking = construct_rigid_transformation(rot_mat,
-                                              tvecs)
-
-    return tracking, quality
+    return rvecs[:,0], tvecs, quality

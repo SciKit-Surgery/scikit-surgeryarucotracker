@@ -133,15 +133,10 @@ class Registration2D3D():
                 _, rvec, tvec = cv.solvePnP(points3d, points2d,
                                              self._projection_matrix,
                                              self._distortion)
-                # flags = cv.SOLVEPNP_SQPNP)
             else:
                 _, rvec, tvec = cv.solvePnP(points3d, points2d,
                                              self._projection_matrix,
                                              self._distortion)
-                #   flags = cv.SOLVEPNP_IPPE)
-
-
-
         return rvec, tvec
 
 def test_arucotracker_vs_solve_pnp():
@@ -237,6 +232,7 @@ def test_vs_solve_pnp_with_smth():
               'camera projection' : calib_mtx,
               'camera distortion' : distortion,
               'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'smoothing buffer' : 3,
               'rigid bodies' : [
                       {
                         'name' : 'reference',
@@ -256,7 +252,7 @@ def test_vs_solve_pnp_with_smth():
 
     reference_register = Registration2D3D(three_d_points,
                                           calib_mtx, distortion,
-                                          buffer_size=1)
+                                          buffer_size=3)
 
     #first frame
     for _frame in range(10):
@@ -284,8 +280,7 @@ def test_vs_solve_pnp_with_smth():
                         ids, marker_corners)
 
         assert success
-        assert np.allclose(modelreference2camera, aruco_reference_tracking,
-                        rtol = 1e-5)
+        assert np.allclose(modelreference2camera, aruco_reference_tracking)
 
     tracker.stop_tracking()
     tracker.close()
@@ -310,6 +305,7 @@ def test_vs_solve_pnp_singletag():
               'camera projection' : calib_mtx,
               'camera distortion' : distortion,
               'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+              'smoothing buffer' : 5,
               'rigid bodies' : [
                       {
                         'name' : 'reference',
@@ -323,7 +319,8 @@ def test_vs_solve_pnp_singletag():
               'camera projection' : calib_mtx,
               'camera distortion' : distortion,
               'aruco dictionary' : 'DICT_4X4_50',
-              'marker size' : 33
+              'marker size' : 33,
+              'smoothing buffer' : 5,
               }
 
 
@@ -341,7 +338,7 @@ def test_vs_solve_pnp_singletag():
 
     reference_register = Registration2D3D(three_d_points,
                                           calib_mtx, distortion,
-                                          buffer_size=1)
+                                          buffer_size=5)
 
     for _frame in range(10):
         _, image = capture.read()
@@ -371,10 +368,8 @@ def test_vs_solve_pnp_singletag():
                     reference_register.get_matrix(
                         ids, marker_corners)
         assert success
-        assert np.allclose(modelreference2camera, aruco_reference_tracking,
-                        rtol = 1e-5)
-        assert np.allclose(modelreference2camera, aruco_reference_tracking2,
-                        rtol = 1e-5)
+        assert np.allclose(modelreference2camera, aruco_reference_tracking)
+        assert np.allclose(aruco_reference_tracking2, aruco_reference_tracking)
 
     tracker.stop_tracking()
     tracker.close()
