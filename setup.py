@@ -54,7 +54,7 @@ setup(
     install_requires=[
         'numpy',
         'opencv-contrib-python',
-        'scikit-surgerycore>=0.6.7'
+        'scikit-surgerycore>=0.6.9'
     ],
 
     entry_points={

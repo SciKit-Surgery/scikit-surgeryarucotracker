@@ -15,8 +15,16 @@ def _make_aruco_board(markers, dictionary):
     dictionary = aruco.getPredefinedDictionary(dictionary)
     #format of ID first, then 15 or 12 columns
     boardshape=markers.shape
+
     if boardshape[0] < 1:
         raise ValueError("Marker pattern appears to have no markers")
+
+    try:
+        _ = boardshape[1]
+    except IndexError:
+        markers = markers.reshape(1, boardshape[0])
+        boardshape=markers.shape
+
     if boardshape[1] != 16 and boardshape[1] != 13:
         raise ValueError("Marker pattern should have either 5 or 4 3D points")
 
@@ -98,6 +106,7 @@ def single_tag_board(tag_size, marker_id,
         tag_size/2.0, -tag_size/2.0, 0.,
         tag_size/2.0, tag_size/2.0, 0.,
         -tag_size/2.0, tag_size/2.0, 0.]], dtype=numpy.float32)
+
     marker_ids = numpy.array([marker_id])
     return aruco.Board_create(tag, dictionary, marker_ids)
 
@@ -152,6 +161,12 @@ class ArUcoRigidBody():
         self.name = rigid_body_name
         self._default_tags = None
         self._dictionary_name = "Not Set"
+
+    def reset_2d_points(self):
+        """
+        Clears 2D point lists.
+        """
+        self._tags_2d = TwoDTags()
 
     def set_2d_points(self, two_d_points, tag_ids):
         """

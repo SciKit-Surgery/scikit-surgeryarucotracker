@@ -38,9 +38,12 @@ class ArUcoTracker(SKSBaseTracker):
 
             camera distortion: defaults to None
 
+            smoothing buffer: specify a buffer over which to average the
+            tracking, defaults to 1
+
             rigid bodies: a list of rigid bodies to track, each body should
-                have a name, a filename where the tag geometry is defined,
-                and an aruco dictionary to use
+            have a 'name', a 'filename' where the tag geometry is defined,
+            and an 'aruco dictionary' to use
 
         :raise Exception: ImportError, ValueError
         """
@@ -68,6 +71,7 @@ class ArUcoTracker(SKSBaseTracker):
         self._ar_dicts, self._ar_dict_names, self._rigid_bodies = \
                         configure_rigid_bodies(configuration)
 
+        super().__init__(configuration, self._rigid_bodies)
         self._marker_size = configuration.get("marker size", 50)
 
         if "calibration" in configuration:
@@ -155,8 +159,10 @@ class ArUcoTracker(SKSBaseTracker):
         port_handles = []
         time_stamps = []
         frame_numbers = []
-        tracking = []
+        tracking_rots = []
+        tracking_trans = []
         quality = []
+        self._reset_rigid_bodies()
 
         timestamp = time()
 
@@ -193,18 +199,23 @@ class ArUcoTracker(SKSBaseTracker):
                     temporary_rigid_bodies.append(temp_rigid_body)
 
         for rigid_body in self._rigid_bodies + temporary_rigid_bodies:
-            rb_tracking, rbquality = rigid_body.get_pose(
+            rb_rot, rb_trans, rbquality = rigid_body.get_pose(
                              self._camera_projection_matrix,
                              self._camera_distortion)
             port_handles.append(rigid_body.name)
             time_stamps.append(timestamp)
             frame_numbers.append(self._frame_number)
-            tracking.append(rb_tracking)
+            tracking_rots.append(rb_rot)
+            tracking_trans.append(rb_trans)
             quality.append(rbquality)
 
+        self.add_frame_to_buffer(port_handles, time_stamps,
+                    frame_numbers,
+                    tracking_rots, tracking_trans, quality,
+                    rot_is_quaternion = False)
+
         self._frame_number += 1
-        return (port_handles, time_stamps, frame_numbers, tracking,
-                quality)
+        return self.get_smooth_frame(port_handles)
 
     def get_tool_descriptions(self):
         """ Returns tool descriptions """
@@ -229,3 +240,10 @@ class ArUcoTracker(SKSBaseTracker):
             self._state = "ready"
         else:
             raise ValueError('Attempted to stop tracking, when not tracking')
+
+    def _reset_rigid_bodies(self):
+        """
+        clears 2d points from all rigid bodies
+        """
+        for rigid_body in self._rigid_bodies:
+            rigid_body.reset_2d_points()

@@ -180,7 +180,7 @@ def test_iteration_over_empty_dicts():
                                [ 0., 0., 0., 1. ]], dtype=np.float32)
 
     pointer_index = port_handles.index('bad_pointer')
-    assert np.all(np.isnan(tracking[pointer_index]))
+    assert np.all(np.isnan(tracking[pointer_index][0:3, 0:4]))
 
     reference_index = port_handles.index('reference')
     assert np.allclose(tracking[reference_index], ref_regression)
@@ -436,8 +436,8 @@ def test_with_no_tags_no_calib():
     assert quality[reference_index] == 0
     assert quality[pointer_index] == 0
 
-    assert np.all(np.isnan(tracking[reference_index]))
-    assert np.all(np.isnan(tracking[pointer_index]))
+    assert np.all(np.isnan(tracking[reference_index][0:3, 0:4]))
+    assert np.all(np.isnan(tracking[pointer_index][0:3, 0:4]))
 
     tracker.stop_tracking()
     tracker.close()
@@ -486,8 +486,8 @@ def test_with_no_tags_and_calib():
     assert quality[reference_index] == 0
     assert quality[pointer_index] == 0
 
-    assert np.all(np.isnan(tracking[reference_index]))
-    assert np.all(np.isnan(tracking[pointer_index]))
+    assert np.all(np.isnan(tracking[reference_index][0:3, 0:4]))
+    assert np.all(np.isnan(tracking[pointer_index][0:3, 0:4]))
 
     tracker.stop_tracking()
     tracker.close()
