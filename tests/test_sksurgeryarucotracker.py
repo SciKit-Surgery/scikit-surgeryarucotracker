@@ -41,6 +41,7 @@ def test_no_video_single_tag():
     config = {'video source' : 'none'}
 
     tracker = ArUcoTracker(config)
+    assert not tracker.has_capture()
     tracker.start_tracking()
     with pytest.raises(ValueError):
         tracker.get_frame()

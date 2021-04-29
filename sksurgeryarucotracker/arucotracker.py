@@ -43,7 +43,9 @@ class ArUcoTracker(SKSBaseTracker):
 
             rigid bodies: a list of rigid bodies to track, each body should
             have a 'name', a 'filename' where the tag geometry is defined,
-            and an 'aruco dictionary' to use
+            and an 'aruco dictionary' to use. Additionally we can include
+            'tag width' in mm when the tag has been scaled during printing or
+            is displayed on a mobile phone screen or similar
 
         :raise Exception: ImportError, ValueError
         """
@@ -247,3 +249,11 @@ class ArUcoTracker(SKSBaseTracker):
         """
         for rigid_body in self._rigid_bodies:
             rigid_body.reset_2d_points()
+
+    def has_capture(self):
+        """
+        :Returns true if the tracker has it's own opencv source otherwise false
+        """
+        if self._capture is None:
+            return False
+        return True
