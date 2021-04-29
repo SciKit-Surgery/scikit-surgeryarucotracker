@@ -9,12 +9,18 @@ def test_rigid_body_init():
     """
     Test class initialises
     """
-
+    #pylint: disable=protected-access
     rigid_body = rgbd.ArUcoRigidBody(rigid_body_name = 'test')
 
     rigid_body.load_3d_points('data/reference.txt', 'DICT_ARUCO_ORIGINAL')
+    pattern_wdth = min(np.ptp([i[:,0] for i in rigid_body._ar_board.objPoints]),
+                       np.ptp([i[:,1] for i in rigid_body._ar_board.objPoints]))
+    assert pattern_wdth == 49.50
 
     rigid_body.scale_3d_tags(measured_pattern_width = 10)
+    pattern_wdth = min(np.ptp([i[:,0] for i in rigid_body._ar_board.objPoints]),
+                       np.ptp([i[:,1] for i in rigid_body._ar_board.objPoints]))
+    assert pattern_wdth == 10.00
 
 
 def test_make_aruco_no_board():

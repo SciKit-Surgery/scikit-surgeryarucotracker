@@ -199,7 +199,8 @@ def test_with_tool_desc_and_calib():
                       {
                         'name' : 'reference',
                         'filename' : 'data/reference.txt',
-                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL'
+                        'aruco dictionary' : 'DICT_ARUCO_ORIGINAL',
+                        'tag width' : 49.50
                       },
                       {
                         'name' : 'pointer',
@@ -212,6 +213,7 @@ def test_with_tool_desc_and_calib():
     tracker = ArUcoTracker(config)
     tracker.start_tracking()
 
+    assert tracker.has_capture()
     (port_handles, timestamps, framenumbers,
      tracking, quality) = tracker.get_frame()
     assert len(port_handles) == len(timestamps)

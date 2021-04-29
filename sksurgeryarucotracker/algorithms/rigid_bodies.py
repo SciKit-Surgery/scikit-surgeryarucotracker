@@ -83,6 +83,10 @@ def configure_rigid_bodies(configuration):
 
         rigid_body.load_3d_points(filename, dictionary_name)
 
+        tag_width = rigid_body_config.get('tag width', None)
+        if tag_width is not None:
+            rigid_body.scale_3d_tags(tag_width)
+
         rigid_bodies.append(rigid_body)
         if dictionary_name not in ar_dict_names:
             ar_dict_names.append(dictionary_name)
@@ -121,12 +125,15 @@ def scale_tags(board, measured_pattern_width):
     :param measured_pattern_width: Width of the tag in mm
     """
 
-    model_pattern_width = min(numpy.ptp(board.objPoints[0][:][:,0]),
-                              numpy.ptp(board.objPoints[0][:][:,1]))
+    model_pattern_width = min(numpy.ptp([i[:, 0] for i in board.objPoints]),
+                              numpy.ptp([i[:, 1] for i in board.objPoints]))
     scale_factor = measured_pattern_width/model_pattern_width
-    board.objPoints[0] *= scale_factor
+    scaled_board = []
+    for tag in board.objPoints:
+        tag *= scale_factor
+        scaled_board.append(tag)
 
-    return board
+    return aruco.Board_create(scaled_board, board.dictionary, board.ids)
 
 class TwoDTags():
     """
