@@ -8,6 +8,8 @@ import cv2.aruco as aruco # pylint: disable = import-error
 from sksurgerycore.algorithms.tracking_smoothing import RollingMean, \
                 RollingMeanRotation, quaternion_to_matrix
 
+from sksurgeryarucotracker.algorithms.compare_matrices \
+        import matrices_equivalent
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
 def ccw_to_cw(ccw_points):
@@ -187,7 +189,7 @@ def test_arucotracker_vs_solve_pnp():
 
 
     aruco_reference_tracking = tracking[reference_index]
-    assert np.allclose(aruco_reference_tracking, ref_regression)
+    assert matrices_equivalent(aruco_reference_tracking, ref_regression)
 
     tracker.stop_tracking()
     tracker.close()
@@ -209,7 +211,7 @@ def test_arucotracker_vs_solve_pnp():
                     ids, marker_corners)
 
     assert success
-    assert np.allclose(modelreference2camera, ref_regression)
+    assert matrices_equivalent(modelreference2camera, ref_regression)
 
     capture.release()
 
