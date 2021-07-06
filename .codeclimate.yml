@@ -57,7 +57,7 @@ exclude_patterns:
 - "features/"
 - "**/test/"
 - "**/tests/"
-- "snappysonic/_version.py"
+- "sksurgeryarucotracker/_version.py"
 - "versioneer.py"
 
 
