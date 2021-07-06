@@ -4,13 +4,15 @@
 
 import numpy as np
 import cv2 as cv
-import cv2.aruco as aruco # pylint: disable = import-error
+from cv2 import aruco
 from sksurgerycore.algorithms.tracking_smoothing import RollingMean, \
                 RollingMeanRotation, quaternion_to_matrix
 
 from sksurgeryarucotracker.algorithms.compare_matrices \
         import matrices_equivalent
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
+
+# pylint: disable=no-member
 
 def ccw_to_cw(ccw_points):
     """
@@ -22,7 +24,6 @@ def ccw_to_cw(ccw_points):
     cw_points[:, 10:13] = ccw_points[:, 7:10]
     cw_points[:, 13:16] = ccw_points[:, 4:7]
     return cw_points
-
 
 class Registration2D3D():
     """

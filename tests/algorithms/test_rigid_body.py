@@ -2,8 +2,10 @@
 """Tests for the rigid body classes"""
 import pytest
 import numpy as np
-import cv2.aruco as aruco # pylint: disable=import-error
+from cv2 import aruco
 import sksurgeryarucotracker.algorithms.rigid_bodies as rgbd
+
+# pylint: disable=no-member
 
 def test_rigid_body_init():
     """

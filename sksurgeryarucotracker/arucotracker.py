@@ -4,7 +4,7 @@
 """
 from time import time
 from numpy import array, float32, loadtxt, ravel, float64
-import cv2.aruco as aruco # pylint: disable=import-error
+from cv2 import aruco
 import cv2
 
 
@@ -173,6 +173,7 @@ class ArUcoTracker(SKSBaseTracker):
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
+            #pylint: disable=no-member
             marker_corners, marker_ids, _ = \
                     aruco.detectMarkers(frame, ar_dict)
             if not marker_corners:

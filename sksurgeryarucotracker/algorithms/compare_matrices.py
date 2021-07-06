@@ -47,4 +47,3 @@ def matrices_equivalent(mat_a, mat_b, cube_length = 500.0, tolerance = 5.0):
         print ("diff: " , trans_a.transpose() - trans_b.transpose())
 
     return equivalent
-
