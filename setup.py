@@ -17,7 +17,7 @@ setup(
     description='scikit-surgeryarucotracker is a simple tracking interface using ARuCo markers',
     long_description=long_description,
     long_description_content_type='text/x-rst',
-    url='https://weisslab.cs.ucl.ac.uk/WEISS/SoftwareRepositories/SNAPPY/scikit-surgeryarucotracker',
+    url='https://github.com/UCL/scikit-surgeryarucotracker',
     author='Stephen Thompson',
     author_email='s.thompson@ucl.ac.uk',
     license='BSD-3 license',
