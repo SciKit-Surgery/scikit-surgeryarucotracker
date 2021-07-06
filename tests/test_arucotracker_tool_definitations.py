@@ -4,6 +4,8 @@
 
 import numpy as np
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
+from sksurgeryarucotracker.algorithms.compare_matrices \
+        import matrices_equivalent
 
 
 def test_with_tool_descriptions():
@@ -90,7 +92,7 @@ def test_with_tool_descriptions():
                                [ 0., 0., 1., -57.1915 ],
                                [ 0., 0., 0., 1. ]], dtype=np.float32)
 
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
     assert np.isclose(quality[reference_index], 0.91666666)
     pointer_index = port_handles.index('pointer')
     assert np.isclose(quality[pointer_index], 0.83333333)
@@ -183,8 +185,7 @@ def test_iteration_over_empty_dicts():
     assert np.all(np.isnan(tracking[pointer_index][0:3, 0:4]))
 
     reference_index = port_handles.index('reference')
-    assert np.allclose(tracking[reference_index], ref_regression)
-
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
 
 def test_with_tool_desc_and_calib():
@@ -238,7 +239,7 @@ def test_with_tool_desc_and_calib():
         [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
         dtype=np.float32)
 
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
     tracker.stop_tracking()
     tracker.close()
@@ -281,7 +282,7 @@ def test_tool_desc_and_float64():
         [ 0.00000000e+00,  0.00000000e+00,  0.00000000e+00,  1.00000000e+00]],
         dtype=np.float32)
 
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
     tracker.stop_tracking()
     tracker.close()
@@ -317,7 +318,7 @@ def test_tool_desc_and_float64():
     reference_index = port_handles.index('reference')
 
     assert np.isclose(quality[reference_index], 0.91666666)
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
     tracker.stop_tracking()
     tracker.close()
@@ -353,7 +354,7 @@ def test_tool_desc_and_float64():
     reference_index = port_handles.index('reference')
 
     assert np.isclose(quality[reference_index], 0.91666666)
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
     tracker.stop_tracking()
     tracker.close()
@@ -389,7 +390,7 @@ def test_tool_desc_and_float64():
     reference_index = port_handles.index('reference')
 
     assert np.isclose(quality[reference_index], 0.91666666)
-    assert np.allclose(tracking[reference_index], ref_regression)
+    assert matrices_equivalent(tracking[reference_index], ref_regression)
 
     tracker.stop_tracking()
     tracker.close()

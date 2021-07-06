@@ -1,11 +1,11 @@
 """ Classes and functions for maintaining ArUco rigid bodies """
 
 import numpy
-import cv2.aruco as aruco # pylint: disable=import-error
+from cv2 import aruco
 from sksurgeryarucotracker.algorithms.registration_2d3d import \
                 estimate_poses_no_calibration, estimate_poses_with_calibration
 
-
+#pylint: disable=no-member
 def _make_aruco_board(markers, dictionary):
     """
     Makes a cv2.aruco.board from an array of 5 or 4 3D points plus

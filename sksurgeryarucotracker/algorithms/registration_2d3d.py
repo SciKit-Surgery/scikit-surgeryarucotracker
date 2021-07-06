@@ -1,7 +1,7 @@
 """ Classes and functions for 2D to 3D registration """
 
 import numpy as np
-import cv2.aruco as aruco # pylint: disable=import-error
+from cv2 import aruco
 
 def _marker_size(marker_points):
     """
@@ -66,7 +66,7 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
 
     :return : a tracking rotation, translation and a quality
     """
-
+    #pylint: disable=no-member
     tracking_rot = np.full((1,3), np.nan, dtype = float)
     tracking_trans = np.full((1,3), np.nan, dtype = float)
     quality = len(marker_ids) / len(aruco_board.ids)
