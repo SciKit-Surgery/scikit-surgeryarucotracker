@@ -1,20 +1,20 @@
 scikit-surgeryarucotracker
 ===============================
 
-.. image:: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/raw/master/project-icon.gif
+.. image:: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/raw/master/project-icon.gif
    :height: 128px
    :width: 128px
-   :target: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker
+   :target: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker
    :alt: Logo
 
 |
 
-.. image:: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/workflows/.github/workflows/ci.yml/badge.svg
-   :target: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/actions/
+.. image:: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/workflows/.github/workflows/ci.yml/badge.svg
+   :target: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/actions/
    :alt: GitHub CI test status
 
-.. image:: https://coveralls.io/repos/github/SciKit_Surgery/scikit-surgeryarucotracker/badge.svg?branch=master&service=github 
-    :target: https://coveralls.io/github/SciKit_Surgery/scikit-surgeryarucotracker?branch=master
+.. image:: https://coveralls.io/repos/github/SciKit-Surgery/scikit-surgeryarucotracker/badge.svg?branch=master&service=github 
+    :target: https://coveralls.io/github/SciKit-Surgery/scikit-surgeryarucotracker?branch=master
     :alt: Test coverage
 
 .. image:: https://readthedocs.org/projects/scikit-surgeryarucotracker/badge/?version=latest
@@ -75,7 +75,7 @@ You can clone the repository using the following command:
 
 ::
 
-    git clone https://github.com/SciKit_Surgery/scikit-surgeryarucotracker
+    git clone https://github.com/SciKit-Surgery/scikit-surgeryarucotracker
 
 
 Running the tests
@@ -115,12 +115,12 @@ Supported by `Wellcome`_ and `EPSRC`_.
 
 
 .. _`Wellcome EPSRC Centre for Interventional and Surgical Sciences`: http://www.ucl.ac.uk/weiss
-.. _`source code repository`: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker
+.. _`source code repository`: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker
 .. _`Documentation`: https://scikit-surgeryarucotracker.readthedocs.io
 .. _`SciKit-Surgery`: https://github.com/UCL/scikit-surgery/wikis/home
 .. _`University College London (UCL)`: http://www.ucl.ac.uk/
 .. _`Wellcome`: https://wellcome.ac.uk/
 .. _`EPSRC`: https://www.epsrc.ac.uk/
-.. _`contributing guidelines`: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/blob/master/CONTRIBUTING.rst
-.. _`license file`: https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/blob/master/LICENSE
+.. _`contributing guidelines`: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/blob/master/CONTRIBUTING.rst
+.. _`license file`: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/blob/master/LICENSE
 

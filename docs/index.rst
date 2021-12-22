@@ -5,7 +5,7 @@ scikit-surgeryarucotracker documentation
    :start-after: .. features-start
    :end-before: .. features-end
 
-`Source code <https://github.com/SciKit_Surgery/scikit-surgeryarucotracker/>`_ is available on GitHub.
+`Source code <https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/>`_ is available on GitHub.
 
 .. toctree::
   :maxdepth: 2
