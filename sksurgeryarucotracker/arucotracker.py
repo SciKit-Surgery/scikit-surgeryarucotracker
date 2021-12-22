@@ -94,8 +94,7 @@ class ArUcoTracker(SKSBaseTracker):
 
                 self._state = "ready"
             else:
-                raise OSError('Failed to open video source {}'
-                              .format(video_source))
+                raise OSError(f'Failed to open video source {video_source}')
         else:
             self._state = "ready"
 

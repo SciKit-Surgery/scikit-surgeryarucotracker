@@ -56,9 +56,9 @@ def configure_rigid_bodies(configuration):
     try:
         ar_dictionary_name = getattr(aruco, dictionary_name)
     except AttributeError:
-        raise ImportError(('Failed when trying to import {} from cv2.'
-                           'aruco. Check dictionary exists.')
-                           .format(dictionary_name)) from AttributeError
+        raise ImportError((f'Failed when trying to import {dictionary_name}'
+                            'from cv2.aruco. Check dictionary exists.')) \
+                                    from AttributeError
     ar_dicts = []
     ar_dict_names = []
     ar_dicts.append(aruco.getPredefinedDictionary(ar_dictionary_name))
@@ -77,9 +77,9 @@ def configure_rigid_bodies(configuration):
         try:
             ar_dictionary_name = getattr(aruco, dictionary_name)
         except AttributeError:
-            raise ImportError(('Failed when trying to import {} from cv2.'
-                               'aruco. Check dictionary exists.')
-                               .format(dictionary_name)) from AttributeError
+            raise ImportError((f'Failed when trying to import {dictionary_name}'
+                                'from cv2.aruco. Check dictionary exists.')) \
+                                        from AttributeError
 
         rigid_body.load_3d_points(filename, dictionary_name)
 
