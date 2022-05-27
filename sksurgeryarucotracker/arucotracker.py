@@ -60,7 +60,8 @@ class ArUcoTracker(SKSBaseTracker):
         self._state = None
 
         self._frame_number = 0
-
+        self._frame = None # Store frame when debugging
+        
         self._debug = configuration.get("debug", False)
 
         video_source = configuration.get("video source", 0)
@@ -167,9 +168,10 @@ class ArUcoTracker(SKSBaseTracker):
         timestamp = time()
 
 # Issue #46: Switching to opencv-headless, so you can't use GUI.
-#        if self._debug:
+        if self._debug:
 #            cv2.imshow('frame', frame)
-
+            self._frame = frame
+  
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
             #pylint: disable=no-member
