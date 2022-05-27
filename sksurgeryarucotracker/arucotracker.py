@@ -156,7 +156,6 @@ class ArUcoTracker(SKSBaseTracker):
         if frame is None:
             raise ValueError('Frame not set, and capture.read failed')
 
-
         port_handles = []
         time_stamps = []
         frame_numbers = []
@@ -167,8 +166,9 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
-        if self._debug:
-            cv2.imshow('frame', frame)
+# Issue #46: Switching to opencv-headless, so you can't use GUI.
+#        if self._debug:
+#            cv2.imshow('frame', frame)
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
