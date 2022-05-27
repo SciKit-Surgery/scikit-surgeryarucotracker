@@ -49,7 +49,7 @@ class ArUcoTracker(SKSBaseTracker):
 
         :raise Exception: ImportError, ValueError
         """
-
+    #pylint: disable=too-many-instance-attributes
     def __init__(self, configuration):
 
         self._camera_projection_matrix = configuration.get("camera projection",
@@ -60,10 +60,8 @@ class ArUcoTracker(SKSBaseTracker):
         self._state = None
 
         self._frame_number = 0
-        self._frame = None # Store frame when debugging
-        
+        self._frame = None #Store frame when debugging
         self._debug = configuration.get("debug", False)
-
         video_source = configuration.get("video source", 0)
 
         if video_source != 'none':
@@ -171,7 +169,7 @@ class ArUcoTracker(SKSBaseTracker):
         if self._debug:
 #            cv2.imshow('frame', frame)
             self._frame = frame
-  
+
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
             #pylint: disable=no-member
