@@ -9,6 +9,10 @@ scikit-surgeryarucotracker
 
 |
 
+.. image:: https://bestpractices.coreinfrastructure.org/projects/6116/badge
+   :target: https://bestpractices.coreinfrastructure.org/projects/6116
+   :alt: OpenSSF Best Practices
+
 .. image:: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/workflows/.github/workflows/ci.yml/badge.svg
    :target: https://github.com/SciKit-Surgery/scikit-surgeryarucotracker/actions/
    :alt: GitHub CI test status
