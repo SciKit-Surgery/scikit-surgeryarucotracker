@@ -66,3 +66,13 @@ def test_configuration():
                     }
     with pytest.raises(ImportError):
         rgbd.configure_rigid_bodies(configuration)
+
+def test_unequal_board():
+    """
+    Board constructor should throw Value Error if markerpoints is
+    different length to markerids
+    """
+    markerpoints=np.ones((12,4,3))
+    markerids=np.ones(10)
+    with pytest.raises(ValueError):
+        _ = rgbd.Board(markerpoints, "Fake Dictionary", markerids)

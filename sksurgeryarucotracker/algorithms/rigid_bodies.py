@@ -18,7 +18,7 @@ class Board():
         """
         number_of_markers = markerpoints.shape[0]
         if number_of_markers != len(marker_ids):
-            assert ValueError("Unequal number of markers detected in"+
+            raise ValueError("Unequal number of markers detected in"+
                 " markerpoints and marker_ids")
         self.corner_points = []
         for marker_index in range(number_of_markers):
