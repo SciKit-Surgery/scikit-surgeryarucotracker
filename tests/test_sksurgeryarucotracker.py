@@ -185,7 +185,7 @@ def test_on_video_with_calib():
     tracker.start_tracking()
     for frame in range(10):
         (port_handles, _timestamps, _framenumbers,
-         tracking, _quality) = tracker.get_frame()
+         tracking, quality) = tracker.get_frame()
         if frame == 1:
 
             regression_array = np.array([
@@ -196,6 +196,7 @@ def test_on_video_with_calib():
 
             assert np.allclose(tracking[port_handles.index('DICT_4X4_50:0')],
                                regression_array)
+            assert quality[0] == 1.0
 
     tracker.stop_tracking()
     tracker.close()

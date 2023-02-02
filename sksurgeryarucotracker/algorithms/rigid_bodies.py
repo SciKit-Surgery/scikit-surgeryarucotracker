@@ -5,7 +5,31 @@ from cv2 import aruco
 from sksurgeryarucotracker.algorithms.registration_2d3d import \
                 estimate_poses_no_calibration, estimate_poses_with_calibration
 
-#pylint: disable=no-member
+
+class Board():
+    """
+    A local replacement for aruco.Board which was deprecated at 4.7
+    """
+    def __init__(self, markerpoints, dictionary, marker_ids):
+        """
+        :param markerpoints: an n * 12 list of marker corners in 3D
+        :param dictionary: a dictionary, based on opencv dictionary types
+        :param marker_ids: a list of n marker ids, corresponding to markerpoints
+        """
+        number_of_markers = markerpoints.shape[0]
+        if number_of_markers != len(marker_ids):
+            assert ValueError("Unequal number of markers detected in"+
+                " markerpoints and marker_ids")
+        self.corner_points = []
+        for marker_index in range(number_of_markers):
+            cornerpoints = markerpoints[marker_index]
+            assert len(cornerpoints) == 12
+            cornerpoints.shape=(4,3)
+            self.corner_points.append(cornerpoints)
+        self.dictionary = dictionary
+        self.ids = marker_ids
+
+
 def _make_aruco_board(markers, dictionary):
     """
     Makes a cv2.aruco.board from an array of 5 or 4 3D points plus
@@ -33,7 +57,7 @@ def _make_aruco_board(markers, dictionary):
     if boardshape[1] == 16:
         markerpoints = markers[:,4:16].astype('float32')
 
-    return aruco.Board_create(markerpoints, dictionary, marker_ids)
+    return Board(markerpoints, dictionary, marker_ids)
 
 
 def load_board_from_file(filename, dictionary = aruco.DICT_ARUCO_ORIGINAL):
@@ -112,7 +136,7 @@ def single_tag_board(tag_size, marker_id,
         -tag_size/2.0, tag_size/2.0, 0.]], dtype=numpy.float32)
 
     marker_ids = numpy.array([marker_id])
-    return aruco.Board_create(tag, dictionary, marker_ids)
+    return Board(tag, dictionary, marker_ids)
 
 
 def scale_tags(board, measured_pattern_width):
@@ -125,15 +149,18 @@ def scale_tags(board, measured_pattern_width):
     :param measured_pattern_width: Width of the tag in mm
     """
 
-    model_pattern_width = min(numpy.ptp([i[:, 0] for i in board.objPoints]),
-                              numpy.ptp([i[:, 1] for i in board.objPoints]))
+    number_of_tags=len(board.corner_points)
+    model_pattern_width = min(numpy.ptp([i[:, 0] for i in board.corner_points]),
+                              numpy.ptp([i[:, 1] for i in board.corner_points]))
     scale_factor = measured_pattern_width/model_pattern_width
     scaled_board = []
-    for tag in board.objPoints:
+    for tag in board.corner_points:
         tag *= scale_factor
         scaled_board.append(tag)
 
-    return aruco.Board_create(scaled_board, board.dictionary, board.ids)
+    scaled_board_np = numpy.array(scaled_board)
+    scaled_board_np.shape = (number_of_tags, 12)
+    return Board(scaled_board_np, board.dictionary, board.ids)
 
 class TwoDTags():
     """

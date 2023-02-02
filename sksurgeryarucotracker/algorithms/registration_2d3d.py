@@ -1,7 +1,7 @@
 """ Classes and functions for 2D to 3D registration """
 
 import numpy as np
-from cv2 import aruco
+import cv2
 
 def _marker_size(marker_points):
     """
@@ -75,26 +75,34 @@ def estimate_poses_with_calibration(marker_corners2d, marker_ids,
         return tracking_rot, tracking_trans, quality
 
     if len(marker_corners2d) == 1:
-        marker_width = aruco_board.objPoints[0][1][0] \
-                        - aruco_board.objPoints[0][0][0]
+        marker_width = aruco_board.corner_points[0][1][0] \
+                        - aruco_board.corner_points[0][0][0]
         rvecs, tvecs, _ = \
-            aruco.estimatePoseSingleMarkers(marker_corners2d, marker_width,
+            cv2.aruco.estimatePoseSingleMarkers(marker_corners2d, marker_width,
                                             camera_projection_matrix,
                                             camera_distortion)
         assert len(rvecs) == 1
         return rvecs[0], tvecs[0][0], quality
 
-    rvec = np.empty((1,3), dtype = np.float32)
-    tvec = np.empty((1,3), dtype = np.float32)
-    markers_used, rvecs, tvecs = \
-        aruco.estimatePoseBoard(marker_corners2d, np.array([marker_ids]),
-                                    aruco_board,
-                                    camera_projection_matrix,
-                                    camera_distortion,
-                                    rvec,
-                                    tvec)
+    points3d = []
+    points2d = []
+    count = 0
 
-    #marker ids should be presorted, so that all 2d markers are on board
-    assert markers_used == len(marker_ids)
+    for index, identities in enumerate(marker_ids):
+        for three_d_index, three_d_marker_id in enumerate(aruco_board.ids):
+            if identities == three_d_marker_id:
+                count += 1
+                points3d.extend(aruco_board.corner_points[three_d_index])
+                points2d.extend(marker_corners2d[index])
+                break
+
+    if count > 0:
+        points3d = np.array(points3d).reshape((count*4), 3)
+        points2d = np.array(points2d).reshape((count*4), 2)
+
+    _, rvecs, tvecs = \
+        cv2.solvePnP(points3d, points2d,
+                                    camera_projection_matrix,
+                                    camera_distortion)
 
     return rvecs[:,0], tvecs, quality
