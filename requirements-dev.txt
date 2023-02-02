@@ -9,7 +9,7 @@ coveralls
 mock
 pyfakefs
 parameterized
-pylint
+pylint<2.16
 sphinx
 sphinx_rtd_theme
 pyinstaller
