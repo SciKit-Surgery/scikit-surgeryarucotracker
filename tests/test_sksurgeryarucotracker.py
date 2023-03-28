@@ -93,7 +93,7 @@ def test_on_video_with_debug():
     reqs: 03, 04 ,05
     """
     config = {'video source' : 'data/output.avi',
-              'debug' : True}
+              'debug' : False}
 
     tracker = ArUcoTracker(config)
     tracker.start_tracking()
