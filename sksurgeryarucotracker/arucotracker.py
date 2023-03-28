@@ -4,6 +4,7 @@
 """
 from time import time
 from numpy import array, float32, loadtxt, ravel, float64
+from PIL import Image
 from cv2 import aruco
 import cv2
 
@@ -166,9 +167,9 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
-# Issue #46: Switching to opencv-headless, so you can't use GUI.
-#        if self._debug:
-#            cv2.imshow('frame', frame)
+        if self._debug:
+            img = Image.fromarray(frame)
+            img.show()
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
