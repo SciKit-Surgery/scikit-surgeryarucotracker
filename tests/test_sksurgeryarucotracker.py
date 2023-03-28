@@ -2,10 +2,13 @@
 
 """scikit-surgeryarucotracker tests"""
 
+import platform
+import os
 import pytest
 import numpy as np
 from cv2 import VideoCapture
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
+
 
 def test_on_video_with_single_tag():
     """
@@ -92,8 +95,13 @@ def test_on_video_with_debug():
     debug should open a separate window showing the image capture
     reqs: 03, 04 ,05
     """
+    if platform.system() == 'Windows' and os.environ.get('CI'):
+        print ('Skipping test on windows CI as debug windows do not close,',
+                'causing CI to hang')
+        return
+
     config = {'video source' : 'data/output.avi',
-              'debug' : False}
+              'debug' : True}
 
     tracker = ArUcoTracker(config)
     tracker.start_tracking()
