@@ -3,8 +3,9 @@
 """A class for straightforward tracking with an ARuCo
 """
 from time import time
+from tkinter import Tk, Canvas, NW
 from numpy import array, float32, loadtxt, ravel, float64
-from PIL import Image
+from PIL import ImageTk, Image
 from cv2 import aruco
 import cv2
 
@@ -13,6 +14,8 @@ from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody, \
                 configure_rigid_bodies
 
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=attribute-defined-outside-init
 
 def _load_calibration(textfile):
     """
@@ -63,6 +66,7 @@ class ArUcoTracker(SKSBaseTracker):
         self._frame_number = 0
 
         self._debug = configuration.get("debug", False)
+        self.debug_window = None
 
         video_source = configuration.get("video source", 0)
 
@@ -168,8 +172,8 @@ class ArUcoTracker(SKSBaseTracker):
         timestamp = time()
 
         if self._debug:
-            img = Image.fromarray(frame)
-            img.show()
+            img = ImageTk.PhotoImage(Image.fromarray(frame))
+            self.canvas.create_image(20, 20, anchor=NW, image=img)
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
@@ -231,6 +235,11 @@ class ArUcoTracker(SKSBaseTracker):
         """
         if self._state == "ready":
             self._state = "tracking"
+            if self._debug:
+                self.debug_window = Tk()
+                self.canvas = Canvas(self.debug_window,
+                        width = 300, height = 300)
+                self.canvas.pack()
         else:
             raise ValueError('Attempted to start tracking, when not ready')
 
@@ -241,6 +250,8 @@ class ArUcoTracker(SKSBaseTracker):
         """
         if self._state == "tracking":
             self._state = "ready"
+            if self.debug_window is not None:
+                self.debug_window.destroy()
         else:
             raise ValueError('Attempted to stop tracking, when not tracking')
 
