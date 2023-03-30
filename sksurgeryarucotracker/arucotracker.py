@@ -10,7 +10,7 @@ import cv2
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody, \
                 configure_rigid_bodies
-from sksurgeryarucotracker.debugger import debugger
+from sksurgeryarucotracker.debugger import Debugger
 
 def _load_calibration(textfile):
     """
@@ -60,7 +60,8 @@ class ArUcoTracker(SKSBaseTracker):
 
         self._frame_number = 0
 
-        self._debug = debugger(configuration.get("debug", False))
+        self._debug = Debugger(configuration.get("debug", False),
+                configuration.get("debug subsample", 4))
 
         video_source = configuration.get("video source", 0)
 
@@ -237,8 +238,6 @@ class ArUcoTracker(SKSBaseTracker):
         """
         if self._state == "tracking":
             self._state = "ready"
-            if self.debug_window is not None:
-                self.debug_window.destroy()
         else:
             raise ValueError('Attempted to stop tracking, when not tracking')
 
