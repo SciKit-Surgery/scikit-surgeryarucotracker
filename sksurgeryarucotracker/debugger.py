@@ -54,3 +54,4 @@ class Debugger():
 
         self.debug_image = bitmap_to_photo(frame, self.subsample)
         self.canvas.create_image(0, 0, anchor=NW, image=self.debug_image)
+        self.debug_window.update()

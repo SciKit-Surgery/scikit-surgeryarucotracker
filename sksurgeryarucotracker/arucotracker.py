@@ -166,18 +166,18 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
-        self._debug.update(frame)
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
-            #pylint: disable=no-member
             marker_corners, marker_ids, _ = \
                     aruco.detectMarkers(frame, ar_dict)
             if not marker_corners:
+                self._debug.update(frame)
                 continue
 
             if self._debug.in_use:
                 aruco.drawDetectedMarkers(frame, marker_corners)
+                self._debug.update(frame)
 
             assigned_marker_ids = []
             for rigid_body in self._rigid_bodies:
