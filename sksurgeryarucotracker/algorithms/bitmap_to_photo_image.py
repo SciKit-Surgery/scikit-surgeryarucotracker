@@ -17,7 +17,6 @@ def bitmap_to_photo(bitmap, subsample = 1):
     a tkinter photoImage suitable for putting into
     tk widget
     """
-    start_time =  datetime.now()
     ss_bitmap = bitmap[1::subsample, 1::subsample]
     image_width = ss_bitmap.shape[1]
     image_height = ss_bitmap.shape[0]
