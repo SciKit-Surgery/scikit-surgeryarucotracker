@@ -7,11 +7,10 @@ from numpy import array, float32, loadtxt, ravel, float64
 from cv2 import aruco
 import cv2
 
-
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody, \
                 configure_rigid_bodies
-
+from sksurgeryarucotracker.debugger import Debugger
 
 def _load_calibration(textfile):
     """
@@ -61,7 +60,8 @@ class ArUcoTracker(SKSBaseTracker):
 
         self._frame_number = 0
 
-        self._debug = configuration.get("debug", False)
+        self._debug = Debugger(configuration.get("debug", False),
+                configuration.get("debug subsample", 4))
 
         video_source = configuration.get("video source", 0)
 
@@ -166,20 +166,18 @@ class ArUcoTracker(SKSBaseTracker):
 
         timestamp = time()
 
-# Issue #46: Switching to opencv-headless, so you can't use GUI.
-#        if self._debug:
-#            cv2.imshow('frame', frame)
 
         temporary_rigid_bodies = []
         for dict_index, ar_dict in enumerate(self._ar_dicts):
-            #pylint: disable=no-member
             marker_corners, marker_ids, _ = \
                     aruco.detectMarkers(frame, ar_dict)
             if not marker_corners:
+                self._debug.update(frame)
                 continue
 
-            if self._debug:
+            if self._debug.in_use:
                 aruco.drawDetectedMarkers(frame, marker_corners)
+                self._debug.update(frame)
 
             assigned_marker_ids = []
             for rigid_body in self._rigid_bodies:

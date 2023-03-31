@@ -7,6 +7,7 @@ import numpy as np
 from cv2 import VideoCapture
 from sksurgeryarucotracker.arucotracker import ArUcoTracker
 
+
 def test_on_video_with_single_tag():
     """
     connect track and close with single tag,
