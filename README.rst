@@ -25,6 +25,9 @@ scikit-surgeryarucotracker
     :target: http://scikit-surgeryarucotracker.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg
+   :target: CODE_OF_CONDUCT.md
+
 .. image:: https://img.shields.io/badge/Cite-SciKit--Surgery-informational
    :target: https://doi.org/10.1007/s11548-020-02180-5
    :alt: The SciKit-Surgery paper
@@ -32,6 +35,10 @@ scikit-surgeryarucotracker
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3971640.svg
    :target: https://doi.org/10.5281/zenodo.3971640
    :alt: Software DOI
+
+.. image:: https://img.shields.io/twitter/follow/scikit_surgery?style=social
+   :target: https://twitter.com/scikit_surgery?ref_src=twsrc%5Etfw
+   :alt: Follow scikit_surgery on twitter
 
 Author: Stephen Thompson
 
