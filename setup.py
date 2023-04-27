@@ -54,6 +54,7 @@ setup(
     install_requires=[
         'numpy',
         'opencv-contrib-python-headless',
+        'imshowTk',
         'scikit-surgerycore>=0.6.9'
     ],
 
