@@ -6,11 +6,11 @@ from time import time
 from numpy import array, float32, loadtxt, ravel, float64
 from cv2 import aruco
 import cv2
+from imshowtk.imshowtk import ImshowTk as Debugger
 
 from sksurgerycore.baseclasses.tracker import SKSBaseTracker
 from sksurgeryarucotracker.algorithms.rigid_bodies import ArUcoRigidBody, \
                 configure_rigid_bodies
-from sksurgeryarucotracker.debugger import Debugger
 
 def _load_calibration(textfile):
     """
@@ -172,12 +172,12 @@ class ArUcoTracker(SKSBaseTracker):
             marker_corners, marker_ids, _ = \
                     aruco.detectMarkers(frame, ar_dict)
             if not marker_corners:
-                self._debug.update(frame)
+                self._debug.imshow(frame)
                 continue
 
             if self._debug.in_use:
                 aruco.drawDetectedMarkers(frame, marker_corners)
-                self._debug.update(frame)
+                self._debug.imshow(frame)
 
             assigned_marker_ids = []
             for rigid_body in self._rigid_bodies:
