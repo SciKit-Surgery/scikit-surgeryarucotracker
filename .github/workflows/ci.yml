@@ -43,7 +43,7 @@ jobs:
 
       - name: Linting
         run: |
-          pylint --rcfile=tests/pylintrc --extension-pkg-whitelist=cv2 ./sksurgeryarucotracker
+          pylint --rcfile=tests/pylintrc ./sksurgeryarucotracker
 
       - name: Run coveralls
         run: |
