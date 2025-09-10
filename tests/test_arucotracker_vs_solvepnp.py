@@ -117,8 +117,8 @@ class Registration2D3D():
         points2d = []
         count = 0
 
-        rvec = np.full(3, np.NaN)
-        tvec = np.full(3, np.NaN)
+        rvec = np.full(3, np.nan)
+        tvec = np.full(3, np.nan)
 
         for index, identities in enumerate(marker_ids):
             for three_d_point in self._three_d_points:
